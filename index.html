@@ -1,0 +1,4995 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard Alumni IFRS 2023/2024</title>
+  <!-- Bootstrap CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    body { padding: 20px; }
+    .filter-section { background-color: #f8f9fa; padding: 20px; border-radius: 8px; margin-bottom: 20px; }
+    .chart-container { margin-bottom: 40px; }
+    .summary-card { margin-bottom: 20px; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1 class="text-center mb-4">Dashboard Alumni IFRS 2023/2024</h1>
+
+    <!-- Filtros -->
+    <div class="filter-section">
+      <h3>Filtros</h3>
+      <div class="row">
+        <div class="col-md-4">
+          <label for="modalidadeFilter" class="form-label">Modalidade:</label>
+          <select id="modalidadeFilter" class="form-select">
+            <option value="">Todas</option>
+          </select>
+        </div>
+        <div class="col-md-4">
+          <label for="cursoFilter" class="form-label">Curso:</label>
+          <select id="cursoFilter" class="form-select">
+            <option value="">Todos</option>
+          </select>
+        </div>
+        <div class="col-md-4 d-flex align-items-end">
+          <button id="applyFilters" class="btn btn-primary">Aplicar Filtros</button>
+          <button id="resetFilters" class="btn btn-secondary ms-2">Limpar</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Resumo -->
+    <div class="summary-section">
+      <h3>Resumo dos Dados</h3>
+      <div class="row">
+        <div class="col-md-3">
+          <div class="card summary-card">
+            <div class="card-body">
+              <h5 class="card-title">Total de Respondentes</h5>
+              <p class="card-text" id="totalRespondentes">0</p>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-3">
+          <div class="card summary-card">
+            <div class="card-body">
+              <h5 class="card-title">Opinião Satisfatória</h5>
+              <p class="card-text" id="opiniaoSatisfatoria">0</p>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-3">
+          <div class="card summary-card">
+            <div class="card-body">
+              <h5 class="card-title">Continuaram Estudos</h5>
+              <p class="card-text" id="continuaramEstudos">0</p>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-3">
+          <div class="card summary-card">
+            <div class="card-body">
+              <h5 class="card-title">Trabalhando na Área</h5>
+              <p class="card-text" id="trabalhandoNaArea">0</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Gráficos -->
+    <div class="chart-section">
+      <div class="row">
+        <div class="col-md-6">
+          <div class="chart-container"><canvas id="opiniaoChart"></canvas></div>
+        </div>
+        <div class="col-md-6">
+          <div class="chart-container"><canvas id="estudosChart"></canvas></div>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-md-6">
+          <div class="chart-container"><canvas id="modalidadeChart"></canvas></div>
+        </div>
+        <div class="col-md-6">
+          <div class="chart-container"><canvas id="trabalhoAreaChart"></canvas></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Justificativas -->
+    <div class="justificativas-section mt-5">
+      <h3>Justificativas Selecionadas</h3>
+      <div id="justificativasContainer" class="alert alert-info">
+        Selecione um filtro para ver as justificativas.
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // 🔹 Cole seu JSON aqui
+    const rawData = 
+        [
+  {
+    "pergunta": "Qual a modalidade do ÚLTIMO curso finalizado no IFRS?",
+    "respostas": [
+      "Técnico Integrado ao Ensino Médio",
+      "Graduação",
+      "Técnico Integrado ao Ensino Médio",
+      "Técnico Integrado ao Ensino Médio",
+      "Graduação",
+      "Graduação",
+      "Graduação",
+      "Graduação",
+      "Graduação",
+      "Graduação",
+      "Graduação",
+      "Técnico Integrado ao Ensino Médio",
+      "Técnico Integrado ao Ensino Médio",
+      "Graduação",
+      "Técnico Integrado ao Ensino Médio",
+      "Técnico Integrado ao Ensino Médio",
+      "Técnico Integrado ao Ensino Médio",
+      "Graduação",
+      "Técnico Integrado ao Ensino Médio",
+      "Técnico Integrado ao Ensino Médio",
+      "Graduação",
+      "Técnico Subsequente ao Ensino Médio",
+      "Técnico Integrado ao Ensino Médio",
+      "Técnico Integrado ao Ensino Médio",
+      "Técnico Integrado ao Ensino Médio",
+      "Técnico Integrado ao Ensino Médio",
+      "Técnico Subsequente ao Ensino Médio",
+      "Técnico Subsequente ao Ensino Médio",
+      "Pós Graduação",
+      "Técnico Integrado ao Ensino Médio",
+      "Graduação",
+      "Pós Graduação",
+      "Graduação",
+      "Pós Graduação",
+      "Graduação",
+      "Pós Graduação",
+      "Graduação",
+      "Técnico Integrado ao Ensino Médio",
+      "Graduação",
+      "Graduação",
+      "Técnico Integrado ao Ensino Médio",
+      "Graduação",
+      "Graduação",
+      "Técnico Subsequente ao Ensino Médio",
+      "Graduação",
+      "Técnico Integrado ao Ensino Médio",
+      "Pós Graduação",
+      "Técnico Integrado ao Ensino Médio",
+      "Técnico Integrado ao Ensino Médio",
+      "Graduação",
+      "Técnico Integrado ao Ensino Médio",
+      "Técnico Integrado ao Ensino Médio",
+      "Técnico Integrado ao Ensino Médio",
+      "Técnico Integrado ao Ensino Médio",
+      "Técnico Integrado ao Ensino Médio",
+      "Técnico Integrado ao Ensino Médio",
+      "Graduação",
+      "Técnico Integrado ao Ensino Médio",
+      "Técnico Integrado ao Ensino Médio",
+      "Graduação",
+      "Graduação",
+      "Graduação",
+      "Graduação",
+      "Graduação",
+      "Técnico Integrado ao Ensino Médio",
+      "Técnico Integrado ao Ensino Médio",
+      "Técnico Integrado ao Ensino Médio",
+      "Técnico Integrado ao Ensino Médio",
+      "Graduação",
+      "Técnico Integrado ao Ensino Médio",
+      "Graduação",
+      "Técnico Integrado ao Ensino Médio",
+      "Pós Graduação",
+      "Técnico Integrado ao Ensino Médio",
+      "Graduação",
+      "Técnico Subsequente ao Ensino Médio",
+      "Pós Graduação",
+      "Técnico Integrado ao Ensino Médio",
+      "Técnico Integrado ao Ensino Médio",
+      "Técnico Integrado ao Ensino Médio",
+      "Técnico Integrado ao Ensino Médio",
+      "Técnico Integrado ao Ensino Médio",
+      "Técnico Integrado ao Ensino Médio",
+      "Técnico Integrado ao Ensino Médio",
+      "Graduação",
+      "Graduação",
+      "Técnico Integrado ao Ensino Médio",
+      "Técnico Integrado ao Ensino Médio",
+      "Técnico Integrado ao Ensino Médio",
+      "Técnico Integrado ao Ensino Médio",
+      "Técnico Integrado ao Ensino Médio",
+      "Técnico Subsequente ao Ensino Médio",
+      "Graduação",
+      "Graduação",
+      "Técnico Integrado ao Ensino Médio",
+      "Graduação",
+      "Graduação",
+      "Curso de Formação Inicial e Continuada (FIC)",
+      "Técnico Integrado ao Ensino Médio",
+      "Graduação",
+      "Técnico Subsequente ao Ensino Médio",
+      "Graduação",
+      "Técnico Subsequente ao Ensino Médio",
+      "Técnico Integrado ao Ensino Médio",
+      "Graduação",
+      "Graduação",
+      "Técnico Integrado ao Ensino Médio",
+      "Técnico Integrado ao Ensino Médio",
+      "Técnico Integrado ao Ensino Médio",
+      "Técnico Integrado ao Ensino Médio",
+      "Técnico Integrado ao Ensino Médio",
+      "Graduação",
+      "Graduação",
+      "Graduação",
+      "Graduação",
+      "Graduação",
+      "Graduação",
+      "Técnico Integrado ao Ensino Médio",
+      "Técnico Integrado ao Ensino Médio",
+      "Graduação",
+      "Técnico Integrado ao Ensino Médio",
+      "Graduação",
+      "Técnico Integrado ao Ensino Médio",
+      "Técnico Integrado ao Ensino Médio",
+      "Técnico Integrado ao Ensino Médio",
+      "Graduação",
+      "Técnico Subsequente ao Ensino Médio",
+      "Técnico Concomitante ao Ensino Médio",
+      "Técnico Integrado ao Ensino Médio",
+      "Pós Graduação",
+      "Graduação",
+      "Técnico Integrado ao Ensino Médio",
+      "Graduação",
+      "Técnico Integrado ao Ensino Médio",
+      "Graduação",
+      "Técnico Subsequente ao Ensino Médio",
+      "Técnico Subsequente ao Ensino Médio",
+      "Técnico Integrado ao Ensino Médio",
+      "Técnico Integrado ao Ensino Médio",
+      "Técnico Integrado ao Ensino Médio",
+      "Técnico Integrado ao Ensino Médio",
+      "Técnico Integrado ao Ensino Médio",
+      "Técnico Integrado ao Ensino Médio",
+      "Técnico Integrado ao Ensino Médio",
+      "Técnico Integrado ao Ensino Médio",
+      "Graduação",
+      "Técnico Subsequente ao Ensino Médio",
+      "Graduação",
+      "Graduação",
+      "Graduação",
+      "Técnico Integrado ao Ensino Médio",
+      "Técnico Subsequente ao Ensino Médio",
+      "Técnico Integrado ao Ensino Médio",
+      "Graduação",
+      "Técnico Integrado ao Ensino Médio",
+      "Técnico Integrado ao Ensino Médio",
+      "Técnico Integrado ao Ensino Médio",
+      "Técnico Integrado ao Ensino Médio",
+      "Graduação",
+      "Técnico Integrado ao Ensino Médio",
+      "Técnico Integrado ao Ensino Médio",
+      "Técnico Integrado ao Ensino Médio",
+      "Técnico Integrado ao Ensino Médio",
+      "Técnico Subsequente ao Ensino Médio",
+      "Graduação",
+      "Técnico Integrado ao Ensino Médio",
+      "Técnico Integrado ao Ensino Médio",
+      "Pós Graduação",
+      "Técnico Integrado ao Ensino Médio",
+      "Técnico Integrado ao Ensino Médio",
+      "Graduação",
+      "Técnico Integrado ao Ensino Médio",
+      "Graduação",
+      "Graduação",
+      "Técnico Integrado ao Ensino Médio",
+      "Graduação",
+      "Técnico Subsequente ao Ensino Médio",
+      "Técnico Subsequente ao Ensino Médio",
+      "Graduação",
+      "Técnico Integrado ao Ensino Médio",
+      "Técnico Integrado ao Ensino Médio",
+      "Técnico Integrado ao Ensino Médio",
+      "Técnico Integrado ao Ensino Médio",
+      "Técnico Integrado ao Ensino Médio",
+      "Técnico Integrado ao Ensino Médio",
+      "Graduação",
+      "Técnico Integrado ao Ensino Médio",
+      "Técnico Integrado ao Ensino Médio",
+      "Graduação",
+      "Técnico Integrado ao Ensino Médio",
+      "Técnico Integrado ao Ensino Médio",
+      "Graduação",
+      "Técnico Subsequente ao Ensino Médio",
+      "Técnico Integrado ao Ensino Médio",
+      "Técnico Concomitante ao Ensino Médio",
+      "Técnico Integrado ao Ensino Médio",
+      "Técnico Integrado ao Ensino Médio",
+      "Graduação",
+      "Técnico Integrado ao Ensino Médio",
+      "Técnico Subsequente ao Ensino Médio",
+      "Técnico Integrado ao Ensino Médio",
+      "Graduação",
+      "Graduação",
+      "Graduação",
+      "Graduação",
+      "Técnico Integrado ao Ensino Médio",
+      "Técnico Integrado ao Ensino Médio",
+      "Graduação",
+      "Graduação",
+      "Graduação",
+      "Técnico Subsequente ao Ensino Médio",
+      "Graduação",
+      "Graduação",
+      "Graduação",
+      "Técnico Integrado ao Ensino Médio",
+      "Graduação",
+      "Graduação",
+      "Graduação",
+      "Técnico Integrado ao Ensino Médio",
+      "Técnico Integrado ao Ensino Médio",
+      "Graduação",
+      "Graduação",
+      "Graduação",
+      "Pós Graduação",
+      "Graduação",
+      "Graduação",
+      "Graduação",
+      "Técnico Integrado ao Ensino Médio",
+      "Técnico Integrado ao Ensino Médio",
+      "Graduação",
+      "Graduação",
+      "Técnico Integrado ao Ensino Médio",
+      "Graduação",
+      "Graduação",
+      "Técnico Integrado ao Ensino Médio",
+      "Técnico Integrado ao Ensino Médio",
+      "Técnico Integrado ao Ensino Médio",
+      "Técnico Integrado ao Ensino Médio",
+      "Graduação",
+      "Graduação",
+      "Técnico Integrado ao Ensino Médio",
+      "Técnico Integrado ao Ensino Médio",
+      "Graduação",
+      "Técnico Subsequente ao Ensino Médio",
+      "Técnico Subsequente ao Ensino Médio",
+      "Técnico Integrado ao Ensino Médio",
+      "Técnico Integrado ao Ensino Médio",
+      "Graduação",
+      "Graduação",
+      "Graduação",
+      "Graduação",
+      "Graduação",
+      "Graduação",
+      "Graduação",
+      "Graduação",
+      "Graduação",
+      "Educação à Distância (EaD)",
+      "Técnico Integrado ao Ensino Médio",
+      "Graduação",
+      "Técnico Integrado ao Ensino Médio",
+      "Técnico Integrado ao Ensino Médio",
+      "Graduação",
+      "Graduação",
+      "Graduação",
+      "Técnico Subsequente ao Ensino Médio",
+      "Graduação",
+      "Graduação",
+      "Técnico Subsequente ao Ensino Médio",
+      "Técnico Subsequente ao Ensino Médio",
+      "Técnico Subsequente ao Ensino Médio",
+      "Técnico Subsequente ao Ensino Médio",
+      "Graduação",
+      "Pós Graduação",
+      "Técnico Integrado ao Ensino Médio",
+      "Técnico Integrado ao Ensino Médio",
+      "Técnico Integrado ao Ensino Médio",
+      "Técnico Subsequente ao Ensino Médio",
+      "Técnico Integrado ao Ensino Médio",
+      "Técnico Integrado ao Ensino Médio",
+      "Técnico Subsequente ao Ensino Médio",
+      "Graduação",
+      "Pós-graduação",
+      "Técnico Subsequente ao Ensino Médio",
+      "Técnico Integrado ao Ensino Médio",
+      "Graduação",
+      "Técnico Integrado ao Ensino Médio",
+      "Técnico Integrado ao Ensino Médio",
+      "Técnico Integrado ao Ensino Médio",
+      "Graduação",
+      "Graduação",
+      "Técnico Integrado ao Ensino Médio",
+      "Técnico Integrado ao Ensino Médio",
+      "Técnico Integrado ao Ensino Médio",
+      "Técnico Subsequente ao Ensino Médio",
+      "Técnico Integrado ao Ensino Médio",
+      "Técnico Subsequente ao Ensino Médio",
+      "Graduação",
+      "Técnico Subsequente ao Ensino Médio",
+      "Técnico Integrado ao Ensino Médio",
+      "Graduação",
+      "Técnico Subsequente ao Ensino Médio",
+      "Graduação",
+      "Graduação",
+      "Técnico Integrado ao Ensino Médio",
+      "Técnico Integrado ao Ensino Médio",
+      "Graduação",
+      "Graduação",
+      "Graduação",
+      "Técnico Integrado ao Ensino Médio",
+      "Técnico Integrado ao Ensino Médio",
+      "Pós-graduação",
+      "Pós-graduação",
+      "Técnico Integrado ao Ensino Médio",
+      "Técnico Integrado ao Ensino Médio",
+      "Técnico Integrado ao Ensino Médio",
+      "Graduação",
+      "Técnico Integrado ao Ensino Médio",
+      "Técnico Subsequente ao Ensino Médio",
+      "Técnico Subsequente ao Ensino Médio",
+      "Pós-graduação",
+      "Técnico Integrado ao Ensino Médio",
+      "Graduação",
+      "Graduação",
+      "Graduação",
+      "Técnico Integrado ao Ensino Médio",
+      "Técnico Integrado ao Ensino Médio",
+      "Graduação",
+      "Graduação",
+      "Técnico Integrado ao Ensino Médio",
+      "Técnico Integrado ao Ensino Médio",
+      "Graduação",
+      "Pós-graduação",
+      "Técnico Subsequente ao Ensino Médio",
+      "Graduação",
+      "Pós-graduação",
+      "Técnico Integrado ao Ensino Médio",
+      "Técnico Integrado ao Ensino Médio",
+      "Técnico Subsequente ao Ensino Médio",
+      "Técnico Subsequente ao Ensino Médio",
+      "Técnico Subsequente ao Ensino Médio",
+      "Graduação",
+      "Graduação",
+      "Graduação",
+      "Técnico Integrado ao Ensino Médio",
+      "Graduação",
+      "Graduação",
+      "Técnico Integrado ao Ensino Médio",
+      "Graduação",
+      "Graduação",
+      "Técnico Integrado ao Ensino Médio",
+      "Graduação",
+      "Graduação",
+      "Pós-graduação",
+      "Graduação",
+      "Técnico Integrado ao Ensino Médio",
+      "Graduação",
+      "Graduação",
+      "Graduação",
+      "Técnico Integrado ao Ensino Médio",
+      "Graduação",
+      "Graduação",
+      "Técnico Integrado ao Ensino Médio",
+      "Técnico Integrado ao Ensino Médio",
+      "Técnico Subsequente ao Ensino Médio",
+      "Graduação",
+      "Técnico Integrado ao Ensino Médio",
+      "Graduação",
+      "Técnico Integrado ao Ensino Médio",
+      "Graduação",
+      "Técnico Subsequente ao Ensino Médio",
+      "Graduação",
+      "Pós-graduação",
+      "Graduação",
+      "Graduação",
+      "Graduação",
+      "Graduação",
+      "Técnico Integrado ao Ensino Médio",
+      "Técnico Integrado ao Ensino Médio",
+      "Graduação"
+    ]
+  },
+  {
+    "pergunta": "Qual o ÚLTIMO curso finalizado no IFRS?",
+    "respostas": [
+      "Técnico em Meio Ambiente",
+      "Técnico em Informática",
+      "Técnico em Química",
+      "Técnico em Administração",
+      "Técnico em Informática",
+      "Técnico em Agropecuária",
+      "Técnico em Química",
+      "Técnico em Plásticos",
+      "Técnico em Informática",
+      "Técnico em Química",
+      "Não está na lista",
+      "Técnico em Informática",
+      "Técnico em Eletrônica",
+      "Técnico em Automação Industrial",
+      "Técnico em Informática para Internet",
+      "Técnico em Agropecuária",
+      "Técnico em Eletrônica",
+      "Técnico em Eletrotécnica",
+      "Técnico em Agropecuária",
+      "Técnico em Meio Ambiente",
+      "Técnico em Eletrotécnica",
+      "Técnico em Informática",
+      "Técnico em Eletrônica",
+      "Técnico em Informática para Internet",
+      "Técnico em Agropecuária",
+      "Técnico em Fabricação Mecânica",
+      "Técnico em Meio Ambiente",
+      "Técnico em Refrigeração e Climatização",
+      "Técnico em Informática",
+      "Técnico em Informática",
+      "Técnico em Agropecuária",
+      "Técnico em Multimídia",
+      "Técnico em Informática",
+      "Técnico em Geoprocessamento",
+      "Técnico em Agropecuária",
+      "Técnico em Eletrotécnica",
+      "Técnico em Eletrotécnica",
+      "Técnico em Informática",
+      "Técnico em Geoprocessamento",
+      "Técnico em Multimídia",
+      "Técnico em Química",
+      "Técnico em Eletrônica",
+      "Técnico em Administração",
+      "Técnico em Administração",
+      "Técnico em Eletrônica",
+      "Técnico em Química",
+      "Técnico em Agropecuária",
+      "Técnico em Informática",
+      "Técnico em Automação Industrial",
+      "Técnico em Administração",
+      "Técnico em Informática para Internet",
+      "Técnico em Informática",
+      "Técnico em Administração",
+      "Técnico em Informática",
+      "Técnico em Agropecuária",
+      "Técnico em Informática",
+      "Técnico em Administração",
+      "Técnico em Agropecuária",
+      "Técnico em Administração",
+      "Técnico em Informática para Internet",
+      "Técnico em Plásticos",
+      "Técnico em Agropecuária",
+      "Técnico em Informática",
+      "Técnico em Agropecuária",
+      "Técnico em Automação Industrial",
+      "Técnico em Administração",
+      "Técnico em Plásticos",
+      "Técnico em Administração",
+      "Técnico em Administração",
+      "Técnico em Administração",
+      "Técnico em Agropecuária",
+      "Técnico em Agropecuária",
+      "Técnico em Química",
+      "Técnico em Administração",
+      "Técnico em Informática para Internet",
+      "Técnico em Administração",
+      "Técnico em Eletrotécnica",
+      "Técnico em Agropecuária",
+      "Técnico em Meio Ambiente",
+      "Técnico em Agropecuária",
+      "Técnico em Administração",
+      "Técnico em Agropecuária",
+      "Técnico em Multimídia",
+      "Técnico em Multimídia",
+      "Técnico em Multimídia",
+      "Técnico em Informática para Internet",
+      "Técnico em Química",
+      "Técnico em Informática para Internet",
+      "Técnico em Viticultura e Enologia",
+      "Técnico em Informática",
+      "Técnico em Química",
+      "Técnico em Automação Industrial",
+      "Técnico em Administração",
+      "Técnico em Agropecuária",
+      "Técnico em Eletrônica",
+      "Técnico em Agropecuária",
+      "Técnico em Agropecuária",
+      "Técnico em Eletrônica",
+      "Técnico em Agropecuária",
+      "Técnico em Fabricação Mecânica",
+      "Técnico em Química",
+      "Técnico em Geoprocessamento",
+      "Técnico em Administração",
+      "Técnico em Informática para Internet",
+      "Técnico em Agropecuária",
+      "Técnico em Informática",
+      "Técnico em Informática",
+      "Técnico em Eletrônica",
+      "Técnico em Fabricação Mecânica",
+      "Técnico em Eletrotécnica",
+      "Técnico em Multimídia",
+      "Técnico em Administração",
+      "Técnico em Informática",
+      "Técnico em Eletrônica",
+      "Técnico em Administração",
+      "Técnico em Informática",
+      "Técnico em Administração",
+      "Técnico em Informática",
+      "Técnico em Administração",
+      "Técnico em Mecânica",
+      "Técnico em Química",
+      "Técnico em Fabricação Mecânica",
+      "Técnico em Eletrotécnica",
+      "Técnico em Química",
+      "Técnico em Refrigeração e Climatização",
+      "Técnico em Eletrotécnica",
+      "Técnico em Eletrotécnica",
+      "Técnico em Química",
+      "Técnico em Automação Industrial",
+      "Técnico em Administração",
+      "Técnico em Administração",
+      "Técnico em Informática",
+      "Técnico em Informática",
+      "Técnico em Informática",
+      "Técnico em Administração",
+      "Técnico em Plásticos",
+      "Técnico em Administração",
+      "Técnico em Plásticos",
+      "Técnico em Multimídia",
+      "Técnico em Administração",
+      "Técnico em Agropecuária",
+      "Técnico em Química",
+      "Técnico em Produção de Áudio e Vídeo",
+      "Técnico em Desenvolvimento de Sistemas",
+      "Técnico em Administração",
+      "Técnico em Eletrônica",
+      "Técnico em Química",
+      "Técnico em Eletrotécnica",
+      "Técnico em Informática para Internet",
+      "Técnico em Agropecuária",
+      "Não está na lista",
+      "Técnico em Produção de Áudio e Vídeo",
+      "Técnico em Geoprocessamento",
+      "Técnico em Informática para Internet",
+      "Técnico em Química",
+      "Técnico em Multimídia",
+      "Técnico em Administração",
+      "Técnico em Multimídia",
+      "Técnico em Química",
+      "Técnico em Fabricação Mecânica",
+      "Técnico em Química",
+      "Técnico em Informática"
+    ]
+  },
+  {
+    "pergunta": "Qual a sua opinião sobre o curso marcado anteriormente?",
+    "respostas": [
+      "Satisfatório",
+      "Muito satisfatório",
+      "Muito satisfatório",
+      "Muito satisfatório",
+      "Muito satisfatório",
+      "Muito satisfatório",
+      "Satisfatório",
+      "Satisfatório",
+      "Satisfatório",
+      "Satisfatório",
+      "Satisfatório",
+      "Muito satisfatório",
+      "Satisfatório",
+      "Satisfatório",
+      "Muito satisfatório",
+      "Satisfatório",
+      "Insatisfatório",
+      "Satisfatório",
+      "Satisfatório",
+      "Satisfatório",
+      "Satisfatório",
+      "Muito satisfatório",
+      "Satisfatório",
+      "Satisfatório",
+      "Muito satisfatório",
+      "Satisfatório",
+      "Satisfatório",
+      "Satisfatório",
+      "Muito satisfatório",
+      "Muito satisfatório",
+      "Muito satisfatório",
+      "Muito satisfatório",
+      "Muito satisfatório",
+      "Satisfatório",
+      "Muito satisfatório",
+      "Muito satisfatório",
+      "Muito satisfatório",
+      "Satisfatório",
+      "Muito satisfatório",
+      "Muito satisfatório",
+      "Muito satisfatório",
+      "Satisfatório",
+      "Satisfatório",
+      "Satisfatório",
+      "Satisfatório",
+      "Muito satisfatório",
+      "Muito satisfatório",
+      "Muito satisfatório",
+      "Muito satisfatório",
+      "Muito satisfatório",
+      "Muito satisfatório",
+      "Muito satisfatório",
+      "Muito satisfatório",
+      "Satisfatório",
+      "Muito satisfatório",
+      "Satisfatório",
+      "Satisfatório",
+      "Satisfatório",
+      "Muito satisfatório",
+      "Satisfatório",
+      "Satisfatório",
+      "Muito satisfatório",
+      "Muito satisfatório",
+      "Satisfatório",
+      "Muito satisfatório",
+      "Muito satisfatório",
+      "Satisfatório",
+      "Satisfatório",
+      "Muito satisfatório",
+      "Satisfatório",
+      "Satisfatório",
+      "Muito satisfatório",
+      "Muito satisfatório",
+      "Muito satisfatório",
+      "Muito satisfatório",
+      "Satisfatório",
+      "Muito satisfatório",
+      "Satisfatório",
+      "Satisfatório",
+      "Pouco satisfatório",
+      "Satisfatório",
+      "Satisfatório",
+      "Muito satisfatório",
+      "Muito satisfatório",
+      "Muito satisfatório",
+      "Muito satisfatório",
+      "Satisfatório",
+      "Satisfatório",
+      "Muito satisfatório",
+      "Muito satisfatório",
+      "Satisfatório",
+      "Satisfatório",
+      "Satisfatório",
+      "Muito satisfatório",
+      "Muito satisfatório",
+      "Muito satisfatório",
+      "Muito satisfatório",
+      "Satisfatório",
+      "Satisfatório",
+      "Satisfatório",
+      "Muito satisfatório",
+      "Muito satisfatório",
+      "Muito satisfatório",
+      "Satisfatório",
+      "Satisfatório",
+      "Satisfatório",
+      "Muito satisfatório",
+      "Satisfatório",
+      "Muito satisfatório",
+      "Satisfatório",
+      "Satisfatório",
+      "Muito satisfatório",
+      "Muito satisfatório",
+      "Pouco satisfatório",
+      "Muito satisfatório",
+      "Satisfatório",
+      "Muito satisfatório",
+      "Satisfatório",
+      "Satisfatório",
+      "Satisfatório",
+      "Satisfatório",
+      "Muito satisfatório",
+      "Muito satisfatório",
+      "Satisfatório",
+      "Muito satisfatório",
+      "Satisfatório",
+      "Satisfatório",
+      "Muito satisfatório",
+      "Insatisfatório",
+      "Satisfatório",
+      "Muito satisfatório",
+      "Satisfatório",
+      "Satisfatório",
+      "Satisfatório",
+      "Pouco satisfatório",
+      "Satisfatório",
+      "Satisfatório",
+      "Muito satisfatório",
+      "Muito satisfatório",
+      "Satisfatório",
+      "Satisfatório",
+      "Satisfatório",
+      "Muito satisfatório",
+      "Satisfatório",
+      "Muito satisfatório",
+      "Muito satisfatório",
+      "Muito satisfatório",
+      "Muito satisfatório",
+      "Muito satisfatório",
+      "Muito satisfatório",
+      "Muito satisfatório",
+      "Muito satisfatório",
+      "Muito satisfatório",
+      "Satisfatório",
+      "Muito satisfatório",
+      "Muito satisfatório",
+      "Satisfatório",
+      "Muito satisfatório",
+      "Satisfatório",
+      "Muito satisfatório",
+      "Muito satisfatório",
+      "Muito satisfatório"
+    ]
+  },
+  {
+    "pergunta": "Qual a justificativa para a opinião marcada anteriormente?",
+    "respostas": [
+      "O IFRS realizou sonhos que eu nem imaginava ter. Me deu perspectivas maiores, objetivos grandiosos. Me tornou uma profissional com todas as habilidades técnicas, mas principalmente me ensinou a sempre manter os pés no chão, presando pelo lado \"humano\"",
+      "A qualidade do ensino, a estrutura disponibilizada e a complementação de aprendizados oferecida pelo IFRS",
+      "Abriu as portas para o meu futuro",
+      "É notório que os professores se acomodam nas suas rotinas. Logo, o ensino médio técnico foi bom, mas tanto o currículo de médio quanto o currículo do técnico estão defazados, com professores sem motivação, entre outras coisas",
+      "Infraestrutura merecida de um ensino público de qualidade. Porém com professores técnicos que não tem motivação nenhuma em aprender a ensinar. Precisava de um rivotril antes das aulas pra não enlouquecer se você tinha interesse em aprender.",
+      "O curso me agregou muito para continuar na área.",
+      "Foi bom",
+      "O curso tem uma base teórica extensa e boa, porém, poderia ter sido mais focado na prática em situações cotidianas, para além do laboratório de eletrônica.",
+      "Ter realizado o curso técnico me propos uma facilidade grande na faculdade, tanto pelos conhecimentos normais do ensino médio, quanto pelas matérias técnicas em si. Porém, ter realizado parte dele na pandemia prejudicou minha formação. ",
+      "Este curso me apresentou ao desenvolvimento de aplicações e construiu uma base solida para minha carreira como desenvolvedor.",
+      "Acredito que o mercado de manutenção que era o grande foco inicial dos técnicos está saturado.",
+      "Prepração dos estudantes para a vida.",
+      "Aprendi o necessário para ser uma boa profissional.",
+      "Satisfatório porém acredito que o curso precise se atualizar mais para o mercado de trabalho, principalmente na parte prática, buscar um equilíbrio entre parte teórica e projeto e prática, além de se atualizar em questão de softwares e dispositivos.",
+      "Estou trabalhando no mercado desde o primeiro ano que sai do curso. Já passei até por posições de líder técnico, sem nem mesmo ter uma graduação. Tive boa base e proveito do curso. Tive a sorte de pegar 4 anos sem greve/paralizações/home office, isso ajudou.",
+      "A base que tive no IFRS foi excelente para minha trajetoria profissional e na UFRGS tambem.",
+      "Os 4 anos de ensino médio integrado com o curso técnico contribuiu muito para meu crescimento pessoal e profissional! ",
+      "professores excelentes \nkgráficos ",
+      "As disciplinas do ensino médio foram muito proveitosas e me garantiram uma ótima nota no ENEM. Entretanto, como fui formanda durante a pandemia, senti falta das aulas práticas técnicas para ter uma formação técnica de qualidade.",
+      "Falta de técnicos em meio ambiente que realmente trabalharam na área, como professores.",
+      "Foi muito bom, mas acabei não exercendo pela baixa perspectiva do mercado de trabalho.",
+      "Vivência universitária e imersa em pesquisa e desenvolvimento.",
+      "Escelente estrutura, ótimos professores somada à experiência da moradia estudantil",
+      "Muito bom o curso",
+      "O curso é bom, porém faz-se necessário focar também na área de manutenção e infra, não apenas em desenvolvimento de software.",
+      "Curso me deu base para a ciência",
+      "Integração perfeita de aulas teóricas e práticas e excelentes oportunidades durante o curso.",
+      "Os professores eram excelentes. Tive muitas oportunidades lá",
+      "Curso ótimo! Prepara muito bem para o mercado de trabalho!",
+      "Qualidade do curso na preparação do aluno para o mercado de trabalho ",
+      "Me fez melhorar como estudante, profissional e como pessoa. ",
+      "A experiência do curso foi muito construtiva para minha vida acadêmica.",
+      "Ótimos profissionais trabalhando no campus e professores extremamente capacitados. Além disso, uma ampla variedade de eventos e projetos que envolviam a participação dos alunos.",
+      "Professores muito capacitados e infraestrutura excelente",
+      "Curso muito bom, quem quer seguir na área desenvolve uma base muito importante para o aprofundamento do ensino superior.",
+      "Acredito que para um melhor curso, há necessidade de maior foco na lógica para programação, e menor foco na linguagem de programação em si. Afinal, a  linguagem é apenas uma ferramenta. Ademais, acredito que vários assuntos poderiam ter sido melhor expostos e um diferente planejamento do currículo também seria extremamente válido, dessa forma, estaria melhor abordando as questões atuais da área de informática. ",
+      "Muitos professores muito bons, mas alguns ruins",
+      "Acho que o curso deu uma base boa para o mercado de trabalho, porém foi muito prejudicado pela pandemia",
+      "As condições estruturais: alimentação, moradia, biblioteca, espaço para práticas, estágios contribuiram para isso",
+      "O curso está muito bem inserido no mercado de trabalho atual, além dos professores estarem muito dedicados à apresentar as novas tecnologias e tendências, comprometidos em proporcionar habilidades e conhecimentos técnicos exigidos na função de automação e também nas adjascentes, voltadas à computação.",
+      "Experiência positiva de preparação para a visa e oportunidades geradas no mundo do trabalho. ",
+      "Além de um ensino médio de ótima qualidade, o curso me ajudou a escolher o que cursar na faculdade, conheci um novo mercado de trabalho, muito interessante e com diversas oportunidades, algo que eu nunca veria se não fosse pelo IFRS Campus Caxias do Sul, ao menos não com tanta imersão no assunto. ",
+      "IFRS me preparou não só para o ambiente acadêmico e de trabalho, mas sim para a vida como um todo. Evoluí muito no IFRS.",
+      "Faltaram atividades práticas no curso e a situação da pandemia demorou a ser resolvida, muitas outras instituições sem a infraestrutura e corpo docente preparado que o IFRS e o Campus Rolante possuem realizaram ações, e a turma que participei ficou muito descontente com o fato. Meu voto seria um meio termo, mas como não ha a opção marquei o anterior. Sou grata ao IFRS por diversos outros pontos, mas quanto ao curso estas observações foram necessárias",
+      "Não marquei como muito satisfatório, pois passamos dois anos em pandemia de forma remota.",
+      "Qualidade dos professores e infraestrutura.",
+      "Os professores são extremamente qualificados e se preocupam em iniciar ao aluno não apenas o conteúdo da disciplina, bem como a experiência de mercado e acadêmica que é tão importante para o pós conclusão.",
+      "Apesar de não ter seguido na área do curso, fui muito feliz com a oportunidade de estudar no IFRS. Isso com certeza auxiliou e contribuiu para ser o profissional que sou hoje, além de querer cursar uma graduação de alta qualidade e ter clareza do que buscava seguir na minha vida. ",
+      "O mercado de trabalho é muito diferente de tudo que foi ensinado. A pratica do mercado de trabalho acabou ensinando mais.",
+      "Muitas coisas podiam ser melhores no curso, desde a infraestrutura até saídas de campo, visitações e um contato maior com as indústrias. Em relação a infraestrutura, o material não corresponde aos mais atuais e ao que de fato se encontra no mercado, além da pouca quantidade e preservação.",
+      "Por ser a primeira turma do técnico em Administração, poucas coisas foram aproveitadas de fato, pois tudo era novo até para os professores",
+      "Ensino de alta qualidade e preparação profissional",
+      "Professores extremamente qualificados e infraestrutura que permite aliar o conhecimento teórico ao prático.",
+      "Faço graduação e noto o quanto esse curso me abre oportunidades na área acadêmica, além da técnica. ",
+      "Ótimo ensino de educação ",
+      "ótimos professores, estrutura de altíssima qualidade e o preparo para o mercado de trabalho/mundo real foi muito bem executado por todos na instituição!",
+      "É um ótimo curso, com boa infraestrutura e bons professores. Porém poderiam ter mais diversidade nos conteúdos das disciplinas ofertadas e uma maior rigidez com os professores, pois haviam casos em que esses não cumpriam com o conteúdo pragmático e com as atividades avaliativas obrigatórias. ",
+      "Foco excessivo em uma linguagem, tendo pouca variedade.",
+      "Me preparou para o mercado e me formou como ser humano. Aprendi coisas como liderança, apresentação e técnica na área da TI",
+      "Ótimo ensino curricular. Na época, técnico deixou a desejar.",
+      "Gostei muito do curso, me trouxe conhecimentos e experiências úteis tanto na área como fora dela.",
+      "Não me agrega atualmente na graduação que escolhi.",
+      "Além de todo o conhecimento obtido, sempre opinei que o curso técnico facilita que o jovem consiga ter noção de qual carreira ele quer seguir, pois o técnico integrado irá promover uma visão daquilo que o aluno fará no futuro caso siga a carreira. \nOutro ponto é que realizei meu estágio obrigatório na empresa que atuo até hoje. Na época fui efetivado como torneiro mecânico ferramenteiro, e hoje trabalho na engenharia de produto e processo.",
+      "Bons professores e conteúdo adequado",
+      "Tiver a oportunidade de um ensino gratuito e de qualidade, tanto referenciando matérias da grade curricular de ensino médio quanto de ensino técnico. Excelentes professores e humanos acima de tudo.",
+      "Pandemia atrapalhou demais as aulas praticas",
+      "Exemplos: Professores abusivos com os alunos, terror psicológico e não ligam nem um pouquinho pra trajetória do aluno ali dentro. Precisei de acompanhamento psicológico pra se quer conseguir terminar meu curso e mesmo assim saí tão traumatizada de lá que a paixão que eu tinha por automação foi sugada de mim e fez com que eu fosse para um caminho completamente diferente e não quisesse exercer minha profissão ou ter uma formação continuada na área. Não recomendo a ninguém os métodos completamente arcaicos de ensino do campi que me formei.",
+      "Foi um ótimo curso, mas a pandemia impactou bastante na qualidade. E alguns professores deixaram muito a desejar.",
+      "É bom, para um curso de nível médio. Mas não é muito atualizado no que o mercado de trabalho quer e precisa.",
+      "É interessante ter uma capacitação nesse sentindo, mais ainda quando se continua na área. Serve como um pequeno voo na disciplina. ",
+      "É um curso muito amplo e rico que possibilita o contato com diversas áreas da tecnologia.",
+      "O ambiente do Ifrs me proporcionou um aprendizado incrível e conhecer técnicas que me dão destaque no ambiente em que estou inserido hoje.",
+      "O curso é de ótima qualidade, porém acredito que alguns conceitos poderiam ser ensinados e não estavam presentes na grade (ex: Inteligência artificial, programação distribuída, edge computing). Entendo que o tempo é pouco e que esses conceitos tem certo grau de complexidade, mas acredito que são essenciais ao menos a introdução desses conceitos para que o posterior egresso saiba onde procurar mais informações e tenha um caminho delimitado.",
+      "O curso te oferece base, desenvolvimento e preparo para o futuro profissional e acadêmico de forma única e aprofundada.",
+      "Ensino de qualidade",
+      "Ensino de qualidade",
+      "Muito bom",
+      "Ótimos professores, espaço acolhedor e que fomenta a curiosidade e expressão artística.",
+      "Atendeu às expectativas.",
+      "Pude ter contato com a Química e a Química Industrial de forma acadêmica e profissional a um nível satisfatório para um aluno de ensino médio, que me ajudou muito para os vestibulares e amadurecimento pessoal.",
+      "Pois a grade curricular é muito semelhante e contempla quase tudo de um curso bacharelado na área.",
+      "Tive um grande aprendizado, principalmente com relação às disciplinas de audiovisual, as quais me possibilitaram explorar outras áreas de atuação profissional, além de explorar estas áreas enquanto estava no Ensino Médio Técnico Integrado devido a oportunidades que surgiram por conta do curso e de suas intensa recomendação e visibilidade crescente no município. ",
+      "Ótimo curso, grade de professores muito boa, experiências no ensino médio de IC são únicas. ",
+      "Vi que me preparou para atuar no curso que estou me graduando (Eng. Bioquimica)"
+    ]
+  },
+  {
+    "pergunta": "Você continuou os estudos após o TÉRMINO do curso marcado anteriormente?",
+    "respostas": [
+      "Sim",
+      "Sim",
+      "Sim",
+      "Sim",
+      "Sim",
+      "Sim",
+      "Sim",
+      "Não",
+      "Sim",
+      "Sim",
+      "Não",
+      "Sim",
+      "Sim",
+      "Sim",
+      "Sim",
+      "Não",
+      "Sim",
+      "Sim",
+      "Não",
+      "Não",
+      "Não",
+      "Sim",
+      "Não",
+      "Sim",
+      "Não",
+      "Sim",
+      "Sim",
+      "Sim",
+      "Sim",
+      "Sim",
+      "Sim",
+      "Sim",
+      "Não",
+      "Não",
+      "Sim",
+      "Não",
+      "Sim",
+      "Sim",
+      "Sim",
+      "Não",
+      "Sim",
+      "Sim",
+      "Sim",
+      "Sim",
+      "Sim",
+      "Sim",
+      "Não",
+      "Não",
+      "Sim",
+      "Não",
+      "Sim",
+      "Não",
+      "Sim",
+      "Não",
+      "Não",
+      "Sim",
+      "Sim",
+      "Sim",
+      "Sim",
+      "Sim",
+      "Sim",
+      "Sim",
+      "Não",
+      "Não",
+      "Sim",
+      "Sim",
+      "Sim",
+      "Sim",
+      "Não",
+      "Não",
+      "Sim",
+      "Não",
+      "Sim",
+      "Não",
+      "Sim",
+      "Não",
+      "Sim",
+      "Sim",
+      "Sim",
+      "Sim",
+      "Não",
+      "Não",
+      "Sim",
+      "Sim",
+      "Sim",
+      "Sim",
+      "Sim",
+      "Sim",
+      "Sim",
+      "Não",
+      "Não",
+      "Sim",
+      "Sim",
+      "Não",
+      "Não",
+      "Sim",
+      "Não",
+      "Sim",
+      "Não",
+      "Não",
+      "Sim",
+      "Não",
+      "Não",
+      "Não",
+      "Não",
+      "Sim",
+      "Sim",
+      "Não",
+      "Não",
+      "Sim",
+      "Sim",
+      "Sim",
+      "Não",
+      "Sim",
+      "Não",
+      "Não",
+      "Sim",
+      "Sim",
+      "Sim",
+      "Sim",
+      "Sim",
+      "Sim",
+      "Sim",
+      "Sim",
+      "Sim",
+      "Não",
+      "Sim",
+      "Sim",
+      "Sim",
+      "Sim",
+      "Não",
+      "Não",
+      "Não",
+      "Não",
+      "Sim",
+      "Não",
+      "Sim",
+      "Sim",
+      "Sim",
+      "Sim",
+      "Sim",
+      "Não",
+      "Não",
+      "Não",
+      "Não",
+      "Não",
+      "Sim",
+      "Sim",
+      "Não",
+      "Não",
+      "Sim",
+      "Não",
+      "Sim"
+    ]
+  },
+  {
+    "pergunta": "Até que ponto seu trabalho está relacionado com a ÁREA do curso marcado anteriormente?",
+    "respostas": [
+      "Muito relacionado",
+      "Não relacionado",
+      "Relacionado",
+      "Muito relacionado",
+      "Muito relacionado",
+      "Muito relacionado",
+      "Muito relacionado",
+      "Não relacionado",
+      "Não relacionado",
+      "Muito relacionado",
+      "Não relacionado",
+      "Não sei dizer",
+      "Não relacionado",
+      "Muito relacionado",
+      "Muito relacionado",
+      "Não relacionado",
+      "Muito relacionado",
+      "Relacionado",
+      "Relacionado",
+      "Muito relacionado",
+      "Muito relacionado",
+      "Muito relacionado",
+      "Muito relacionado",
+      "Relacionado",
+      "Muito relacionado",
+      "Muito relacionado",
+      "Não relacionado",
+      "Pouco relacionado",
+      "Pouco relacionado",
+      "Relacionado",
+      "Muito relacionado",
+      "Relacionado",
+      "Muito relacionado",
+      "Muito relacionado",
+      "Muito relacionado",
+      "Muito relacionado",
+      "Muito relacionado",
+      "Relacionado",
+      "Muito relacionado",
+      "Muito relacionado",
+      "Muito relacionado",
+      "Não relacionado",
+      "Não relacionado",
+      "Muito relacionado",
+      "Muito relacionado",
+      "Muito relacionado",
+      "Muito relacionado",
+      "Relacionado",
+      "Não relacionado",
+      "Muito relacionado",
+      "Muito relacionado",
+      "Pouco relacionado",
+      "Muito relacionado",
+      "Relacionado",
+      "Pouco relacionado",
+      "Relacionado",
+      "Não relacionado",
+      "Relacionado",
+      "Pouco relacionado",
+      "Muito relacionado",
+      "Relacionado",
+      "Relacionado",
+      "Muito relacionado",
+      "Relacionado",
+      "Não relacionado",
+      "Muito relacionado",
+      "Relacionado",
+      "Muito relacionado",
+      "Muito relacionado",
+      "Relacionado",
+      "Relacionado",
+      "Relacionado",
+      "Não relacionado",
+      "Não relacionado",
+      "Muito relacionado",
+      "Muito relacionado",
+      "Pouco relacionado",
+      "Muito relacionado",
+      "Relacionado",
+      "Muito relacionado",
+      "Relacionado",
+      "Muito relacionado",
+      "Muito relacionado",
+      "Muito relacionado",
+      "Muito relacionado",
+      "Relacionado",
+      "Pouco relacionado",
+      "Muito relacionado",
+      "Pouco relacionado",
+      "Relacionado",
+      "Não relacionado",
+      "Relacionado",
+      "Muito relacionado",
+      "Relacionado",
+      "Pouco relacionado",
+      "Muito relacionado",
+      "Muito relacionado",
+      "Muito relacionado",
+      "Não relacionado",
+      "Não relacionado",
+      "Muito relacionado",
+      "Muito relacionado",
+      "Muito relacionado",
+      "Muito relacionado",
+      "Relacionado",
+      "Pouco relacionado",
+      "Não relacionado",
+      "Pouco relacionado",
+      "Muito relacionado",
+      "Não relacionado",
+      "Relacionado",
+      "Relacionado",
+      "Não relacionado",
+      "Muito relacionado",
+      "Pouco relacionado",
+      "Pouco relacionado",
+      "Relacionado",
+      "Muito relacionado",
+      "Não relacionado",
+      "Relacionado",
+      "Muito relacionado",
+      "Pouco relacionado",
+      "Pouco relacionado",
+      "Não relacionado",
+      "Muito relacionado",
+      "Relacionado",
+      "Muito relacionado",
+      "Muito relacionado",
+      "Pouco relacionado",
+      "Não relacionado",
+      "Pouco relacionado",
+      "Relacionado",
+      "Muito relacionado",
+      "Muito relacionado",
+      "Muito relacionado",
+      "Relacionado",
+      "Não relacionado",
+      "Não relacionado",
+      "Relacionado",
+      "Muito relacionado",
+      "Relacionado",
+      "Não relacionado",
+      "Muito relacionado",
+      "Relacionado",
+      "Muito relacionado",
+      "Muito relacionado",
+      "Muito relacionado",
+      "Muito relacionado",
+      "Pouco relacionado",
+      "Muito relacionado",
+      "Muito relacionado",
+      "Muito relacionado",
+      "Muito relacionado",
+      "Pouco relacionado",
+      "Muito relacionado",
+      "Muito relacionado",
+      "Não relacionado",
+      "Muito relacionado",
+      "Pouco relacionado",
+      "Relacionado",
+      "Muito relacionado",
+      "Muito relacionado",
+      "Pouco relacionado",
+      "Pouco relacionado",
+      "Muito relacionado",
+      "Muito relacionado",
+      "Relacionado",
+      "Muito relacionado",
+      "Pouco relacionado",
+      "Muito relacionado",
+      "Muito relacionado",
+      "Relacionado",
+      "Relacionado",
+      "Relacionado",
+      "Muito relacionado",
+      "Relacionado",
+      "Relacionado",
+      "Relacionado",
+      "Muito relacionado",
+      "Pouco relacionado",
+      "Muito relacionado",
+      "Pouco relacionado",
+      "Muito relacionado",
+      "Não relacionado",
+      "Muito relacionado",
+      "Não relacionado",
+      "Muito relacionado",
+      "Pouco relacionado",
+      "Muito relacionado",
+      "Muito relacionado",
+      "Muito relacionado",
+      "Muito relacionado",
+      "Muito relacionado",
+      "Muito relacionado",
+      "Muito relacionado",
+      "Muito relacionado",
+      "Pouco relacionado",
+      "Pouco relacionado",
+      "Relacionado",
+      "Não relacionado",
+      "Muito relacionado",
+      "Muito relacionado",
+      "Muito relacionado",
+      "Relacionado",
+      "Muito relacionado",
+      "Muito relacionado",
+      "Muito relacionado",
+      "Muito relacionado",
+      "Muito relacionado",
+      "Muito relacionado",
+      "Muito relacionado",
+      "Muito relacionado",
+      "Muito relacionado",
+      "Não relacionado",
+      "Não relacionado",
+      "Muito relacionado",
+      "Não relacionado",
+      "Relacionado",
+      "Relacionado",
+      "Pouco relacionado",
+      "Muito relacionado",
+      "Muito relacionado",
+      "Relacionado",
+      "Pouco relacionado",
+      "Muito relacionado",
+      "Não relacionado",
+      "Pouco relacionado",
+      "Muito relacionado",
+      "Não relacionado",
+      "Não relacionado",
+      "Muito relacionado",
+      "Muito relacionado",
+      "Relacionado",
+      "Pouco relacionado",
+      "Muito relacionado",
+      "Muito relacionado",
+      "Relacionado",
+      "Relacionado",
+      "Muito relacionado",
+      "Muito relacionado",
+      "Pouco relacionado",
+      "Pouco relacionado",
+      "Muito relacionado",
+      "Pouco relacionado",
+      "Muito relacionado",
+      "Muito relacionado",
+      "Muito relacionado",
+      "Muito relacionado",
+      "Muito relacionado",
+      "Muito relacionado",
+      "Muito relacionado",
+      "Muito relacionado",
+      "Muito relacionado",
+      "Não relacionado",
+      "Relacionado",
+      "Muito relacionado",
+      "Muito relacionado",
+      "Muito relacionado",
+      "Pouco relacionado",
+      "Relacionado",
+      "Relacionado",
+      "Muito relacionado",
+      "Pouco relacionado",
+      "Não relacionado",
+      "Muito relacionado",
+      "Muito relacionado",
+      "Muito relacionado",
+      "Relacionado",
+      "Relacionado",
+      "Muito relacionado",
+      "Não relacionado",
+      "Muito relacionado",
+      "Muito relacionado",
+      "Relacionado",
+      "Relacionado",
+      "Muito relacionado",
+      "Não sei dizer",
+      "Muito relacionado",
+      "Muito relacionado",
+      "Muito relacionado",
+      "Relacionado",
+      "Pouco relacionado",
+      "Pouco relacionado",
+      "Muito relacionado",
+      "Muito relacionado",
+      "Relacionado",
+      "Não relacionado",
+      "Pouco relacionado",
+      "Pouco relacionado",
+      "Muito relacionado",
+      "Não relacionado",
+      "Relacionado",
+      "Muito relacionado",
+      "Não relacionado",
+      "Não relacionado",
+      "Relacionado",
+      "Não relacionado",
+      "Relacionado",
+      "Não relacionado"
+    ]
+  }
+];
+     
+
+    // Função para transformar JSON em linhas (respondentes)
+    function transformData(raw) {
+      const questions = raw.map(item => item.pergunta);
+      const firstQuestionAnswers = raw[0].respostas;
+      const totalRespondents = firstQuestionAnswers.length;
+      const data = [];
+      for (let i = 0; i < totalRespondents; i++) {
+        const respondent = {};
+        raw.forEach(q => {
+          respondent[q.pergunta] = q.respostas[i] || null;
+        });
+        data.push(respondent);
+      }
+      return data;
+    }
+
+    const allData = transformData(rawData);
+    let filteredData = [...allData];
+
+    const COLUMN = {
+      MODALIDADE: "Qual a modalidade do ÚLTIMO curso finalizado no IFRS?",
+      CURSO: "Qual o ÚLTIMO curso finalizado no IFRS?",
+      OPINIAO: "Qual a sua opinião sobre o curso marcado anteriormente?",
+      CONTINUOU_ESTUDOS: "Você continuou os estudos após o TÉRMINO do curso marcado anteriormente?",
+      TRABALHO_AREA: "Até que ponto seu trabalho está relacionado com a ÁREA do curso marcado anteriormente?",
+      JUSTIFICATIVA: "Qual a justificativa para a opinião marcada anteriormente?"
+    };
+
+    function getUniqueValues(data, columnKey) {
+      const values = data.map(row => row[columnKey]).filter(v => v);
+      return [...new Set(values)].sort();
+    }
+
+    function populateFilters() {
+      const modalidadeSelect = document.getElementById('modalidadeFilter');
+      const cursoSelect = document.getElementById('cursoFilter');
+
+      getUniqueValues(allData, COLUMN.MODALIDADE).forEach(mod => {
+        const opt = document.createElement('option');
+        opt.value = opt.textContent = mod;
+        modalidadeSelect.appendChild(opt);
+      });
+
+      getUniqueValues(allData, COLUMN.CURSO).forEach(curso => {
+        const opt = document.createElement('option');
+        opt.value = opt.textContent = curso;
+        cursoSelect.appendChild(opt);
+      });
+    }
+
+    function applyFilters() {
+      const modalidadeValue = document.getElementById('modalidadeFilter').value;
+      const cursoValue = document.getElementById('cursoFilter').value;
+
+      filteredData = allData.filter(row => {
+        const matchModalidade = !modalidadeValue || row[COLUMN.MODALIDADE] === modalidadeValue;
+        const matchCurso = !cursoValue || row[COLUMN.CURSO] === cursoValue;
+        return matchModalidade && matchCurso;
+      });
+
+      updateSummary();
+      updateCharts();
+      updateJustificativas();
+    }
+
+    function resetFilters() {
+      document.getElementById('modalidadeFilter').value = '';
+      document.getElementById('cursoFilter').value = '';
+      filteredData = [...allData];
+      updateSummary();
+      updateCharts();
+      updateJustificativas();
+    }
+
+    function updateSummary() {
+      document.getElementById('totalRespondentes').textContent = filteredData.length;
+
+      const satisfatorios = filteredData.filter(r =>
+        r[COLUMN.OPINIAO] === "Muito satisfatório" || r[COLUMN.OPINIAO] === "Satisfatório"
+      ).length;
+      document.getElementById('opiniaoSatisfatoria').textContent = satisfatorios;
+
+      const continuaram = filteredData.filter(r => r[COLUMN.CONTINUOU_ESTUDOS] === "Sim").length;
+      document.getElementById('continuaramEstudos').textContent = continuaram;
+
+      const naArea = filteredData.filter(r =>
+        r[COLUMN.TRABALHO_AREA] === "Muito relacionado" || r[COLUMN.TRABALHO_AREA] === "Relacionado"
+      ).length;
+      document.getElementById('trabalhandoNaArea').textContent = naArea;
+    }
+
+    let charts = {};
+    function countValues(data, columnKey) {
+      return data.reduce((acc, row) => {
+        const val = row[columnKey];
+        if (val) acc[val] = (acc[val] || 0) + 1;
+        return acc;
+      }, {});
+    }
+
+    function renderChart(canvasId, title, type, labels, data) {
+      const ctx = document.getElementById(canvasId).getContext('2d');
+      if (charts[canvasId]) charts[canvasId].destroy();
+      charts[canvasId] = new Chart(ctx, {
+        type,
+        data: {
+          labels,
+          datasets: [{
+            label: title,
+            data,
+            backgroundColor: [
+              'rgba(54,162,235,0.7)',
+              'rgba(255,99,132,0.7)',
+              'rgba(255,205,86,0.7)',
+              'rgba(75,192,192,0.7)',
+              'rgba(153,102,255,0.7)',
+              'rgba(201,203,207,0.7)'
+            ]
+          }]
+        },
+        options: { responsive: true, plugins: { title: { display: true, text: title } } }
+      });
+    }
+
+    function updateCharts() {
+      renderChart('opiniaoChart', 'Opiniões', 'pie',
+        Object.keys(countValues(filteredData, COLUMN.OPINIAO)),
+        Object.values(countValues(filteredData, COLUMN.OPINIAO)));
+
+      renderChart('estudosChart', 'Continuaram Estudos', 'doughnut',
+        Object.keys(countValues(filteredData, COLUMN.CONTINUOU_ESTUDOS)),
+        Object.values(countValues(filteredData, COLUMN.CONTINUOU_ESTUDOS)));
+
+      renderChart('modalidadeChart', 'Modalidades', 'bar',
+        Object.keys(countValues(filteredData, COLUMN.MODALIDADE)),
+        Object.values(countValues(filteredData, COLUMN.MODALIDADE)));
+
+      renderChart('trabalhoAreaChart', 'Relação Trabalho/Área', 'bar',
+        Object.keys(countValues(filteredData, COLUMN.TRABALHO_AREA)),
+        Object.values(countValues(filteredData, COLUMN.TRABALHO_AREA)));
+    }
+
+    function updateJustificativas() {
+      const container = document.getElementById('justificativasContainer');
+      container.innerHTML = '';
+      const justificativas = filteredData.map(r => r[COLUMN.JUSTIFICATIVA]).filter(j => j);
+      if (!justificativas.length) {
+        container.innerHTML = '<div class="alert alert-warning">Nenhuma justificativa encontrada.</div>';
+        return;
+      }
+      const list = document.createElement('div');
+      list.className = 'list-group';
+      justificativas.slice(0,5).forEach((j,i) => {
+        const item = document.createElement('div');
+        item.className = 'list-group-item';
+        item.innerHTML = `<strong>${i+1}.</strong> ${j}`;
+        list.appendChild(item);
+      });
+      container.appendChild(list);
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      populateFilters();
+      applyFilters();
+      document.getElementById('applyFilters').addEventListener('click', applyFilters);
+      document.getElementById('resetFilters').addEventListener('click', resetFilters);
+    });
+  </script>
+</body>
+</html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard Alumni IFRS 2023/2024</title>
+  <!-- Bootstrap CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    body { padding: 20px; }
+    .filter-section { background-color: #f8f9fa; padding: 20px; border-radius: 8px; margin-bottom: 20px; }
+    .chart-container { margin-bottom: 40px; }
+    .summary-card { margin-bottom: 20px; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1 class="text-center mb-4">Dashboard Alumni IFRS 2023/2024</h1>
+
+    <!-- Filtros -->
+    <div class="filter-section">
+      <h3>Filtros</h3>
+      <div class="row">
+        <div class="col-md-4">
+          <label for="modalidadeFilter" class="form-label">Modalidade:</label>
+          <select id="modalidadeFilter" class="form-select">
+            <option value="">Todas</option>
+          </select>
+        </div>
+        <div class="col-md-4">
+          <label for="cursoFilter" class="form-label">Curso:</label>
+          <select id="cursoFilter" class="form-select">
+            <option value="">Todos</option>
+          </select>
+        </div>
+        <div class="col-md-4 d-flex align-items-end">
+          <button id="applyFilters" class="btn btn-primary">Aplicar Filtros</button>
+          <button id="resetFilters" class="btn btn-secondary ms-2">Limpar</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Resumo -->
+    <div class="summary-section">
+      <h3>Resumo dos Dados</h3>
+      <div class="row">
+        <div class="col-md-3">
+          <div class="card summary-card">
+            <div class="card-body">
+              <h5 class="card-title">Total de Respondentes</h5>
+              <p class="card-text" id="totalRespondentes">0</p>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-3">
+          <div class="card summary-card">
+            <div class="card-body">
+              <h5 class="card-title">Opinião Satisfatória</h5>
+              <p class="card-text" id="opiniaoSatisfatoria">0</p>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-3">
+          <div class="card summary-card">
+            <div class="card-body">
+              <h5 class="card-title">Continuaram Estudos</h5>
+              <p class="card-text" id="continuaramEstudos">0</p>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-3">
+          <div class="card summary-card">
+            <div class="card-body">
+              <h5 class="card-title">Trabalhando na Área</h5>
+              <p class="card-text" id="trabalhandoNaArea">0</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Gráficos -->
+    <div class="chart-section">
+      <div class="row">
+        <div class="col-md-6">
+          <div class="chart-container"><canvas id="opiniaoChart"></canvas></div>
+        </div>
+        <div class="col-md-6">
+          <div class="chart-container"><canvas id="estudosChart"></canvas></div>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-md-6">
+          <div class="chart-container"><canvas id="modalidadeChart"></canvas></div>
+        </div>
+        <div class="col-md-6">
+          <div class="chart-container"><canvas id="trabalhoAreaChart"></canvas></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Justificativas -->
+    <div class="justificativas-section mt-5">
+      <h3>Justificativas Selecionadas</h3>
+      <div id="justificativasContainer" class="alert alert-info">
+        Selecione um filtro para ver as justificativas.
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // 🔹 Cole seu JSON aqui
+    const rawData = 
+        [
+  {
+    "pergunta": "Qual a modalidade do ÚLTIMO curso finalizado no IFRS?",
+    "respostas": [
+      "Técnico Integrado ao Ensino Médio",
+      "Graduação",
+      "Técnico Integrado ao Ensino Médio",
+      "Técnico Integrado ao Ensino Médio",
+      "Graduação",
+      "Graduação",
+      "Graduação",
+      "Graduação",
+      "Graduação",
+      "Graduação",
+      "Graduação",
+      "Técnico Integrado ao Ensino Médio",
+      "Técnico Integrado ao Ensino Médio",
+      "Graduação",
+      "Técnico Integrado ao Ensino Médio",
+      "Técnico Integrado ao Ensino Médio",
+      "Técnico Integrado ao Ensino Médio",
+      "Graduação",
+      "Técnico Integrado ao Ensino Médio",
+      "Técnico Integrado ao Ensino Médio",
+      "Graduação",
+      "Técnico Subsequente ao Ensino Médio",
+      "Técnico Integrado ao Ensino Médio",
+      "Técnico Integrado ao Ensino Médio",
+      "Técnico Integrado ao Ensino Médio",
+      "Técnico Integrado ao Ensino Médio",
+      "Técnico Subsequente ao Ensino Médio",
+      "Técnico Subsequente ao Ensino Médio",
+      "Pós Graduação",
+      "Técnico Integrado ao Ensino Médio",
+      "Graduação",
+      "Pós Graduação",
+      "Graduação",
+      "Pós Graduação",
+      "Graduação",
+      "Pós Graduação",
+      "Graduação",
+      "Técnico Integrado ao Ensino Médio",
+      "Graduação",
+      "Graduação",
+      "Técnico Integrado ao Ensino Médio",
+      "Graduação",
+      "Graduação",
+      "Técnico Subsequente ao Ensino Médio",
+      "Graduação",
+      "Técnico Integrado ao Ensino Médio",
+      "Pós Graduação",
+      "Técnico Integrado ao Ensino Médio",
+      "Técnico Integrado ao Ensino Médio",
+      "Graduação",
+      "Técnico Integrado ao Ensino Médio",
+      "Técnico Integrado ao Ensino Médio",
+      "Técnico Integrado ao Ensino Médio",
+      "Técnico Integrado ao Ensino Médio",
+      "Técnico Integrado ao Ensino Médio",
+      "Técnico Integrado ao Ensino Médio",
+      "Graduação",
+      "Técnico Integrado ao Ensino Médio",
+      "Técnico Integrado ao Ensino Médio",
+      "Graduação",
+      "Graduação",
+      "Graduação",
+      "Graduação",
+      "Graduação",
+      "Técnico Integrado ao Ensino Médio",
+      "Técnico Integrado ao Ensino Médio",
+      "Técnico Integrado ao Ensino Médio",
+      "Técnico Integrado ao Ensino Médio",
+      "Graduação",
+      "Técnico Integrado ao Ensino Médio",
+      "Graduação",
+      "Técnico Integrado ao Ensino Médio",
+      "Pós Graduação",
+      "Técnico Integrado ao Ensino Médio",
+      "Graduação",
+      "Técnico Subsequente ao Ensino Médio",
+      "Pós Graduação",
+      "Técnico Integrado ao Ensino Médio",
+      "Técnico Integrado ao Ensino Médio",
+      "Técnico Integrado ao Ensino Médio",
+      "Técnico Integrado ao Ensino Médio",
+      "Técnico Integrado ao Ensino Médio",
+      "Técnico Integrado ao Ensino Médio",
+      "Técnico Integrado ao Ensino Médio",
+      "Graduação",
+      "Graduação",
+      "Técnico Integrado ao Ensino Médio",
+      "Técnico Integrado ao Ensino Médio",
+      "Técnico Integrado ao Ensino Médio",
+      "Técnico Integrado ao Ensino Médio",
+      "Técnico Integrado ao Ensino Médio",
+      "Técnico Subsequente ao Ensino Médio",
+      "Graduação",
+      "Graduação",
+      "Técnico Integrado ao Ensino Médio",
+      "Graduação",
+      "Graduação",
+      "Curso de Formação Inicial e Continuada (FIC)",
+      "Técnico Integrado ao Ensino Médio",
+      "Graduação",
+      "Técnico Subsequente ao Ensino Médio",
+      "Graduação",
+      "Técnico Subsequente ao Ensino Médio",
+      "Técnico Integrado ao Ensino Médio",
+      "Graduação",
+      "Graduação",
+      "Técnico Integrado ao Ensino Médio",
+      "Técnico Integrado ao Ensino Médio",
+      "Técnico Integrado ao Ensino Médio",
+      "Técnico Integrado ao Ensino Médio",
+      "Técnico Integrado ao Ensino Médio",
+      "Graduação",
+      "Graduação",
+      "Graduação",
+      "Graduação",
+      "Graduação",
+      "Graduação",
+      "Técnico Integrado ao Ensino Médio",
+      "Técnico Integrado ao Ensino Médio",
+      "Graduação",
+      "Técnico Integrado ao Ensino Médio",
+      "Graduação",
+      "Técnico Integrado ao Ensino Médio",
+      "Técnico Integrado ao Ensino Médio",
+      "Técnico Integrado ao Ensino Médio",
+      "Graduação",
+      "Técnico Subsequente ao Ensino Médio",
+      "Técnico Concomitante ao Ensino Médio",
+      "Técnico Integrado ao Ensino Médio",
+      "Pós Graduação",
+      "Graduação",
+      "Técnico Integrado ao Ensino Médio",
+      "Graduação",
+      "Técnico Integrado ao Ensino Médio",
+      "Graduação",
+      "Técnico Subsequente ao Ensino Médio",
+      "Técnico Subsequente ao Ensino Médio",
+      "Técnico Integrado ao Ensino Médio",
+      "Técnico Integrado ao Ensino Médio",
+      "Técnico Integrado ao Ensino Médio",
+      "Técnico Integrado ao Ensino Médio",
+      "Técnico Integrado ao Ensino Médio",
+      "Técnico Integrado ao Ensino Médio",
+      "Técnico Integrado ao Ensino Médio",
+      "Técnico Integrado ao Ensino Médio",
+      "Graduação",
+      "Técnico Subsequente ao Ensino Médio",
+      "Graduação",
+      "Graduação",
+      "Graduação",
+      "Técnico Integrado ao Ensino Médio",
+      "Técnico Subsequente ao Ensino Médio",
+      "Técnico Integrado ao Ensino Médio",
+      "Graduação",
+      "Técnico Integrado ao Ensino Médio",
+      "Técnico Integrado ao Ensino Médio",
+      "Técnico Integrado ao Ensino Médio",
+      "Técnico Integrado ao Ensino Médio",
+      "Graduação",
+      "Técnico Integrado ao Ensino Médio",
+      "Técnico Integrado ao Ensino Médio",
+      "Técnico Integrado ao Ensino Médio",
+      "Técnico Integrado ao Ensino Médio",
+      "Técnico Subsequente ao Ensino Médio",
+      "Graduação",
+      "Técnico Integrado ao Ensino Médio",
+      "Técnico Integrado ao Ensino Médio",
+      "Pós Graduação",
+      "Técnico Integrado ao Ensino Médio",
+      "Técnico Integrado ao Ensino Médio",
+      "Graduação",
+      "Técnico Integrado ao Ensino Médio",
+      "Graduação",
+      "Graduação",
+      "Técnico Integrado ao Ensino Médio",
+      "Graduação",
+      "Técnico Subsequente ao Ensino Médio",
+      "Técnico Subsequente ao Ensino Médio",
+      "Graduação",
+      "Técnico Integrado ao Ensino Médio",
+      "Técnico Integrado ao Ensino Médio",
+      "Técnico Integrado ao Ensino Médio",
+      "Técnico Integrado ao Ensino Médio",
+      "Técnico Integrado ao Ensino Médio",
+      "Técnico Integrado ao Ensino Médio",
+      "Graduação",
+      "Técnico Integrado ao Ensino Médio",
+      "Técnico Integrado ao Ensino Médio",
+      "Graduação",
+      "Técnico Integrado ao Ensino Médio",
+      "Técnico Integrado ao Ensino Médio",
+      "Graduação",
+      "Técnico Subsequente ao Ensino Médio",
+      "Técnico Integrado ao Ensino Médio",
+      "Técnico Concomitante ao Ensino Médio",
+      "Técnico Integrado ao Ensino Médio",
+      "Técnico Integrado ao Ensino Médio",
+      "Graduação",
+      "Técnico Integrado ao Ensino Médio",
+      "Técnico Subsequente ao Ensino Médio",
+      "Técnico Integrado ao Ensino Médio",
+      "Graduação",
+      "Graduação",
+      "Graduação",
+      "Graduação",
+      "Técnico Integrado ao Ensino Médio",
+      "Técnico Integrado ao Ensino Médio",
+      "Graduação",
+      "Graduação",
+      "Graduação",
+      "Técnico Subsequente ao Ensino Médio",
+      "Graduação",
+      "Graduação",
+      "Graduação",
+      "Técnico Integrado ao Ensino Médio",
+      "Graduação",
+      "Graduação",
+      "Graduação",
+      "Técnico Integrado ao Ensino Médio",
+      "Técnico Integrado ao Ensino Médio",
+      "Graduação",
+      "Graduação",
+      "Graduação",
+      "Pós Graduação",
+      "Graduação",
+      "Graduação",
+      "Graduação",
+      "Técnico Integrado ao Ensino Médio",
+      "Técnico Integrado ao Ensino Médio",
+      "Graduação",
+      "Graduação",
+      "Técnico Integrado ao Ensino Médio",
+      "Graduação",
+      "Graduação",
+      "Técnico Integrado ao Ensino Médio",
+      "Técnico Integrado ao Ensino Médio",
+      "Técnico Integrado ao Ensino Médio",
+      "Técnico Integrado ao Ensino Médio",
+      "Graduação",
+      "Graduação",
+      "Técnico Integrado ao Ensino Médio",
+      "Técnico Integrado ao Ensino Médio",
+      "Graduação",
+      "Técnico Subsequente ao Ensino Médio",
+      "Técnico Subsequente ao Ensino Médio",
+      "Técnico Integrado ao Ensino Médio",
+      "Técnico Integrado ao Ensino Médio",
+      "Graduação",
+      "Graduação",
+      "Graduação",
+      "Graduação",
+      "Graduação",
+      "Graduação",
+      "Graduação",
+      "Graduação",
+      "Graduação",
+      "Educação à Distância (EaD)",
+      "Técnico Integrado ao Ensino Médio",
+      "Graduação",
+      "Técnico Integrado ao Ensino Médio",
+      "Técnico Integrado ao Ensino Médio",
+      "Graduação",
+      "Graduação",
+      "Graduação",
+      "Técnico Subsequente ao Ensino Médio",
+      "Graduação",
+      "Graduação",
+      "Técnico Subsequente ao Ensino Médio",
+      "Técnico Subsequente ao Ensino Médio",
+      "Técnico Subsequente ao Ensino Médio",
+      "Técnico Subsequente ao Ensino Médio",
+      "Graduação",
+      "Pós Graduação",
+      "Técnico Integrado ao Ensino Médio",
+      "Técnico Integrado ao Ensino Médio",
+      "Técnico Integrado ao Ensino Médio",
+      "Técnico Subsequente ao Ensino Médio",
+      "Técnico Integrado ao Ensino Médio",
+      "Técnico Integrado ao Ensino Médio",
+      "Técnico Subsequente ao Ensino Médio",
+      "Graduação",
+      "Pós-graduação",
+      "Técnico Subsequente ao Ensino Médio",
+      "Técnico Integrado ao Ensino Médio",
+      "Graduação",
+      "Técnico Integrado ao Ensino Médio",
+      "Técnico Integrado ao Ensino Médio",
+      "Técnico Integrado ao Ensino Médio",
+      "Graduação",
+      "Graduação",
+      "Técnico Integrado ao Ensino Médio",
+      "Técnico Integrado ao Ensino Médio",
+      "Técnico Integrado ao Ensino Médio",
+      "Técnico Subsequente ao Ensino Médio",
+      "Técnico Integrado ao Ensino Médio",
+      "Técnico Subsequente ao Ensino Médio",
+      "Graduação",
+      "Técnico Subsequente ao Ensino Médio",
+      "Técnico Integrado ao Ensino Médio",
+      "Graduação",
+      "Técnico Subsequente ao Ensino Médio",
+      "Graduação",
+      "Graduação",
+      "Técnico Integrado ao Ensino Médio",
+      "Técnico Integrado ao Ensino Médio",
+      "Graduação",
+      "Graduação",
+      "Graduação",
+      "Técnico Integrado ao Ensino Médio",
+      "Técnico Integrado ao Ensino Médio",
+      "Pós-graduação",
+      "Pós-graduação",
+      "Técnico Integrado ao Ensino Médio",
+      "Técnico Integrado ao Ensino Médio",
+      "Técnico Integrado ao Ensino Médio",
+      "Graduação",
+      "Técnico Integrado ao Ensino Médio",
+      "Técnico Subsequente ao Ensino Médio",
+      "Técnico Subsequente ao Ensino Médio",
+      "Pós-graduação",
+      "Técnico Integrado ao Ensino Médio",
+      "Graduação",
+      "Graduação",
+      "Graduação",
+      "Técnico Integrado ao Ensino Médio",
+      "Técnico Integrado ao Ensino Médio",
+      "Graduação",
+      "Graduação",
+      "Técnico Integrado ao Ensino Médio",
+      "Técnico Integrado ao Ensino Médio",
+      "Graduação",
+      "Pós-graduação",
+      "Técnico Subsequente ao Ensino Médio",
+      "Graduação",
+      "Pós-graduação",
+      "Técnico Integrado ao Ensino Médio",
+      "Técnico Integrado ao Ensino Médio",
+      "Técnico Subsequente ao Ensino Médio",
+      "Técnico Subsequente ao Ensino Médio",
+      "Técnico Subsequente ao Ensino Médio",
+      "Graduação",
+      "Graduação",
+      "Graduação",
+      "Técnico Integrado ao Ensino Médio",
+      "Graduação",
+      "Graduação",
+      "Técnico Integrado ao Ensino Médio",
+      "Graduação",
+      "Graduação",
+      "Técnico Integrado ao Ensino Médio",
+      "Graduação",
+      "Graduação",
+      "Pós-graduação",
+      "Graduação",
+      "Técnico Integrado ao Ensino Médio",
+      "Graduação",
+      "Graduação",
+      "Graduação",
+      "Técnico Integrado ao Ensino Médio",
+      "Graduação",
+      "Graduação",
+      "Técnico Integrado ao Ensino Médio",
+      "Técnico Integrado ao Ensino Médio",
+      "Técnico Subsequente ao Ensino Médio",
+      "Graduação",
+      "Técnico Integrado ao Ensino Médio",
+      "Graduação",
+      "Técnico Integrado ao Ensino Médio",
+      "Graduação",
+      "Técnico Subsequente ao Ensino Médio",
+      "Graduação",
+      "Pós-graduação",
+      "Graduação",
+      "Graduação",
+      "Graduação",
+      "Graduação",
+      "Técnico Integrado ao Ensino Médio",
+      "Técnico Integrado ao Ensino Médio",
+      "Graduação"
+    ]
+  },
+  {
+    "pergunta": "Qual o ÚLTIMO curso finalizado no IFRS?",
+    "respostas": [
+      "Técnico em Meio Ambiente",
+      "Técnico em Informática",
+      "Técnico em Química",
+      "Técnico em Administração",
+      "Técnico em Informática",
+      "Técnico em Agropecuária",
+      "Técnico em Química",
+      "Técnico em Plásticos",
+      "Técnico em Informática",
+      "Técnico em Química",
+      "Não está na lista",
+      "Técnico em Informática",
+      "Técnico em Eletrônica",
+      "Técnico em Automação Industrial",
+      "Técnico em Informática para Internet",
+      "Técnico em Agropecuária",
+      "Técnico em Eletrônica",
+      "Técnico em Eletrotécnica",
+      "Técnico em Agropecuária",
+      "Técnico em Meio Ambiente",
+      "Técnico em Eletrotécnica",
+      "Técnico em Informática",
+      "Técnico em Eletrônica",
+      "Técnico em Informática para Internet",
+      "Técnico em Agropecuária",
+      "Técnico em Fabricação Mecânica",
+      "Técnico em Meio Ambiente",
+      "Técnico em Refrigeração e Climatização",
+      "Técnico em Informática",
+      "Técnico em Informática",
+      "Técnico em Agropecuária",
+      "Técnico em Multimídia",
+      "Técnico em Informática",
+      "Técnico em Geoprocessamento",
+      "Técnico em Agropecuária",
+      "Técnico em Eletrotécnica",
+      "Técnico em Eletrotécnica",
+      "Técnico em Informática",
+      "Técnico em Geoprocessamento",
+      "Técnico em Multimídia",
+      "Técnico em Química",
+      "Técnico em Eletrônica",
+      "Técnico em Administração",
+      "Técnico em Administração",
+      "Técnico em Eletrônica",
+      "Técnico em Química",
+      "Técnico em Agropecuária",
+      "Técnico em Informática",
+      "Técnico em Automação Industrial",
+      "Técnico em Administração",
+      "Técnico em Informática para Internet",
+      "Técnico em Informática",
+      "Técnico em Administração",
+      "Técnico em Informática",
+      "Técnico em Agropecuária",
+      "Técnico em Informática",
+      "Técnico em Administração",
+      "Técnico em Agropecuária",
+      "Técnico em Administração",
+      "Técnico em Informática para Internet",
+      "Técnico em Plásticos",
+      "Técnico em Agropecuária",
+      "Técnico em Informática",
+      "Técnico em Agropecuária",
+      "Técnico em Automação Industrial",
+      "Técnico em Administração",
+      "Técnico em Plásticos",
+      "Técnico em Administração",
+      "Técnico em Administração",
+      "Técnico em Administração",
+      "Técnico em Agropecuária",
+      "Técnico em Agropecuária",
+      "Técnico em Química",
+      "Técnico em Administração",
+      "Técnico em Informática para Internet",
+      "Técnico em Administração",
+      "Técnico em Eletrotécnica",
+      "Técnico em Agropecuária",
+      "Técnico em Meio Ambiente",
+      "Técnico em Agropecuária",
+      "Técnico em Administração",
+      "Técnico em Agropecuária",
+      "Técnico em Multimídia",
+      "Técnico em Multimídia",
+      "Técnico em Multimídia",
+      "Técnico em Informática para Internet",
+      "Técnico em Química",
+      "Técnico em Informática para Internet",
+      "Técnico em Viticultura e Enologia",
+      "Técnico em Informática",
+      "Técnico em Química",
+      "Técnico em Automação Industrial",
+      "Técnico em Administração",
+      "Técnico em Agropecuária",
+      "Técnico em Eletrônica",
+      "Técnico em Agropecuária",
+      "Técnico em Agropecuária",
+      "Técnico em Eletrônica",
+      "Técnico em Agropecuária",
+      "Técnico em Fabricação Mecânica",
+      "Técnico em Química",
+      "Técnico em Geoprocessamento",
+      "Técnico em Administração",
+      "Técnico em Informática para Internet",
+      "Técnico em Agropecuária",
+      "Técnico em Informática",
+      "Técnico em Informática",
+      "Técnico em Eletrônica",
+      "Técnico em Fabricação Mecânica",
+      "Técnico em Eletrotécnica",
+      "Técnico em Multimídia",
+      "Técnico em Administração",
+      "Técnico em Informática",
+      "Técnico em Eletrônica",
+      "Técnico em Administração",
+      "Técnico em Informática",
+      "Técnico em Administração",
+      "Técnico em Informática",
+      "Técnico em Administração",
+      "Técnico em Mecânica",
+      "Técnico em Química",
+      "Técnico em Fabricação Mecânica",
+      "Técnico em Eletrotécnica",
+      "Técnico em Química",
+      "Técnico em Refrigeração e Climatização",
+      "Técnico em Eletrotécnica",
+      "Técnico em Eletrotécnica",
+      "Técnico em Química",
+      "Técnico em Automação Industrial",
+      "Técnico em Administração",
+      "Técnico em Administração",
+      "Técnico em Informática",
+      "Técnico em Informática",
+      "Técnico em Informática",
+      "Técnico em Administração",
+      "Técnico em Plásticos",
+      "Técnico em Administração",
+      "Técnico em Plásticos",
+      "Técnico em Multimídia",
+      "Técnico em Administração",
+      "Técnico em Agropecuária",
+      "Técnico em Química",
+      "Técnico em Produção de Áudio e Vídeo",
+      "Técnico em Desenvolvimento de Sistemas",
+      "Técnico em Administração",
+      "Técnico em Eletrônica",
+      "Técnico em Química",
+      "Técnico em Eletrotécnica",
+      "Técnico em Informática para Internet",
+      "Técnico em Agropecuária",
+      "Não está na lista",
+      "Técnico em Produção de Áudio e Vídeo",
+      "Técnico em Geoprocessamento",
+      "Técnico em Informática para Internet",
+      "Técnico em Química",
+      "Técnico em Multimídia",
+      "Técnico em Administração",
+      "Técnico em Multimídia",
+      "Técnico em Química",
+      "Técnico em Fabricação Mecânica",
+      "Técnico em Química",
+      "Técnico em Informática"
+    ]
+  },
+  {
+    "pergunta": "Qual a sua opinião sobre o curso marcado anteriormente?",
+    "respostas": [
+      "Satisfatório",
+      "Muito satisfatório",
+      "Muito satisfatório",
+      "Muito satisfatório",
+      "Muito satisfatório",
+      "Muito satisfatório",
+      "Satisfatório",
+      "Satisfatório",
+      "Satisfatório",
+      "Satisfatório",
+      "Satisfatório",
+      "Muito satisfatório",
+      "Satisfatório",
+      "Satisfatório",
+      "Muito satisfatório",
+      "Satisfatório",
+      "Insatisfatório",
+      "Satisfatório",
+      "Satisfatório",
+      "Satisfatório",
+      "Satisfatório",
+      "Muito satisfatório",
+      "Satisfatório",
+      "Satisfatório",
+      "Muito satisfatório",
+      "Satisfatório",
+      "Satisfatório",
+      "Satisfatório",
+      "Muito satisfatório",
+      "Muito satisfatório",
+      "Muito satisfatório",
+      "Muito satisfatório",
+      "Muito satisfatório",
+      "Satisfatório",
+      "Muito satisfatório",
+      "Muito satisfatório",
+      "Muito satisfatório",
+      "Satisfatório",
+      "Muito satisfatório",
+      "Muito satisfatório",
+      "Muito satisfatório",
+      "Satisfatório",
+      "Satisfatório",
+      "Satisfatório",
+      "Satisfatório",
+      "Muito satisfatório",
+      "Muito satisfatório",
+      "Muito satisfatório",
+      "Muito satisfatório",
+      "Muito satisfatório",
+      "Muito satisfatório",
+      "Muito satisfatório",
+      "Muito satisfatório",
+      "Satisfatório",
+      "Muito satisfatório",
+      "Satisfatório",
+      "Satisfatório",
+      "Satisfatório",
+      "Muito satisfatório",
+      "Satisfatório",
+      "Satisfatório",
+      "Muito satisfatório",
+      "Muito satisfatório",
+      "Satisfatório",
+      "Muito satisfatório",
+      "Muito satisfatório",
+      "Satisfatório",
+      "Satisfatório",
+      "Muito satisfatório",
+      "Satisfatório",
+      "Satisfatório",
+      "Muito satisfatório",
+      "Muito satisfatório",
+      "Muito satisfatório",
+      "Muito satisfatório",
+      "Satisfatório",
+      "Muito satisfatório",
+      "Satisfatório",
+      "Satisfatório",
+      "Pouco satisfatório",
+      "Satisfatório",
+      "Satisfatório",
+      "Muito satisfatório",
+      "Muito satisfatório",
+      "Muito satisfatório",
+      "Muito satisfatório",
+      "Satisfatório",
+      "Satisfatório",
+      "Muito satisfatório",
+      "Muito satisfatório",
+      "Satisfatório",
+      "Satisfatório",
+      "Satisfatório",
+      "Muito satisfatório",
+      "Muito satisfatório",
+      "Muito satisfatório",
+      "Muito satisfatório",
+      "Satisfatório",
+      "Satisfatório",
+      "Satisfatório",
+      "Muito satisfatório",
+      "Muito satisfatório",
+      "Muito satisfatório",
+      "Satisfatório",
+      "Satisfatório",
+      "Satisfatório",
+      "Muito satisfatório",
+      "Satisfatório",
+      "Muito satisfatório",
+      "Satisfatório",
+      "Satisfatório",
+      "Muito satisfatório",
+      "Muito satisfatório",
+      "Pouco satisfatório",
+      "Muito satisfatório",
+      "Satisfatório",
+      "Muito satisfatório",
+      "Satisfatório",
+      "Satisfatório",
+      "Satisfatório",
+      "Satisfatório",
+      "Muito satisfatório",
+      "Muito satisfatório",
+      "Satisfatório",
+      "Muito satisfatório",
+      "Satisfatório",
+      "Satisfatório",
+      "Muito satisfatório",
+      "Insatisfatório",
+      "Satisfatório",
+      "Muito satisfatório",
+      "Satisfatório",
+      "Satisfatório",
+      "Satisfatório",
+      "Pouco satisfatório",
+      "Satisfatório",
+      "Satisfatório",
+      "Muito satisfatório",
+      "Muito satisfatório",
+      "Satisfatório",
+      "Satisfatório",
+      "Satisfatório",
+      "Muito satisfatório",
+      "Satisfatório",
+      "Muito satisfatório",
+      "Muito satisfatório",
+      "Muito satisfatório",
+      "Muito satisfatório",
+      "Muito satisfatório",
+      "Muito satisfatório",
+      "Muito satisfatório",
+      "Muito satisfatório",
+      "Muito satisfatório",
+      "Satisfatório",
+      "Muito satisfatório",
+      "Muito satisfatório",
+      "Satisfatório",
+      "Muito satisfatório",
+      "Satisfatório",
+      "Muito satisfatório",
+      "Muito satisfatório",
+      "Muito satisfatório"
+    ]
+  },
+  {
+    "pergunta": "Qual a justificativa para a opinião marcada anteriormente?",
+    "respostas": [
+      "O IFRS realizou sonhos que eu nem imaginava ter. Me deu perspectivas maiores, objetivos grandiosos. Me tornou uma profissional com todas as habilidades técnicas, mas principalmente me ensinou a sempre manter os pés no chão, presando pelo lado \"humano\"",
+      "A qualidade do ensino, a estrutura disponibilizada e a complementação de aprendizados oferecida pelo IFRS",
+      "Abriu as portas para o meu futuro",
+      "É notório que os professores se acomodam nas suas rotinas. Logo, o ensino médio técnico foi bom, mas tanto o currículo de médio quanto o currículo do técnico estão defazados, com professores sem motivação, entre outras coisas",
+      "Infraestrutura merecida de um ensino público de qualidade. Porém com professores técnicos que não tem motivação nenhuma em aprender a ensinar. Precisava de um rivotril antes das aulas pra não enlouquecer se você tinha interesse em aprender.",
+      "O curso me agregou muito para continuar na área.",
+      "Foi bom",
+      "O curso tem uma base teórica extensa e boa, porém, poderia ter sido mais focado na prática em situações cotidianas, para além do laboratório de eletrônica.",
+      "Ter realizado o curso técnico me propos uma facilidade grande na faculdade, tanto pelos conhecimentos normais do ensino médio, quanto pelas matérias técnicas em si. Porém, ter realizado parte dele na pandemia prejudicou minha formação. ",
+      "Este curso me apresentou ao desenvolvimento de aplicações e construiu uma base solida para minha carreira como desenvolvedor.",
+      "Acredito que o mercado de manutenção que era o grande foco inicial dos técnicos está saturado.",
+      "Prepração dos estudantes para a vida.",
+      "Aprendi o necessário para ser uma boa profissional.",
+      "Satisfatório porém acredito que o curso precise se atualizar mais para o mercado de trabalho, principalmente na parte prática, buscar um equilíbrio entre parte teórica e projeto e prática, além de se atualizar em questão de softwares e dispositivos.",
+      "Estou trabalhando no mercado desde o primeiro ano que sai do curso. Já passei até por posições de líder técnico, sem nem mesmo ter uma graduação. Tive boa base e proveito do curso. Tive a sorte de pegar 4 anos sem greve/paralizações/home office, isso ajudou.",
+      "A base que tive no IFRS foi excelente para minha trajetoria profissional e na UFRGS tambem.",
+      "Os 4 anos de ensino médio integrado com o curso técnico contribuiu muito para meu crescimento pessoal e profissional! ",
+      "professores excelentes \nkgráficos ",
+      "As disciplinas do ensino médio foram muito proveitosas e me garantiram uma ótima nota no ENEM. Entretanto, como fui formanda durante a pandemia, senti falta das aulas práticas técnicas para ter uma formação técnica de qualidade.",
+      "Falta de técnicos em meio ambiente que realmente trabalharam na área, como professores.",
+      "Foi muito bom, mas acabei não exercendo pela baixa perspectiva do mercado de trabalho.",
+      "Vivência universitária e imersa em pesquisa e desenvolvimento.",
+      "Escelente estrutura, ótimos professores somada à experiência da moradia estudantil",
+      "Muito bom o curso",
+      "O curso é bom, porém faz-se necessário focar também na área de manutenção e infra, não apenas em desenvolvimento de software.",
+      "Curso me deu base para a ciência",
+      "Integração perfeita de aulas teóricas e práticas e excelentes oportunidades durante o curso.",
+      "Os professores eram excelentes. Tive muitas oportunidades lá",
+      "Curso ótimo! Prepara muito bem para o mercado de trabalho!",
+      "Qualidade do curso na preparação do aluno para o mercado de trabalho ",
+      "Me fez melhorar como estudante, profissional e como pessoa. ",
+      "A experiência do curso foi muito construtiva para minha vida acadêmica.",
+      "Ótimos profissionais trabalhando no campus e professores extremamente capacitados. Além disso, uma ampla variedade de eventos e projetos que envolviam a participação dos alunos.",
+      "Professores muito capacitados e infraestrutura excelente",
+      "Curso muito bom, quem quer seguir na área desenvolve uma base muito importante para o aprofundamento do ensino superior.",
+      "Acredito que para um melhor curso, há necessidade de maior foco na lógica para programação, e menor foco na linguagem de programação em si. Afinal, a  linguagem é apenas uma ferramenta. Ademais, acredito que vários assuntos poderiam ter sido melhor expostos e um diferente planejamento do currículo também seria extremamente válido, dessa forma, estaria melhor abordando as questões atuais da área de informática. ",
+      "Muitos professores muito bons, mas alguns ruins",
+      "Acho que o curso deu uma base boa para o mercado de trabalho, porém foi muito prejudicado pela pandemia",
+      "As condições estruturais: alimentação, moradia, biblioteca, espaço para práticas, estágios contribuiram para isso",
+      "O curso está muito bem inserido no mercado de trabalho atual, além dos professores estarem muito dedicados à apresentar as novas tecnologias e tendências, comprometidos em proporcionar habilidades e conhecimentos técnicos exigidos na função de automação e também nas adjascentes, voltadas à computação.",
+      "Experiência positiva de preparação para a visa e oportunidades geradas no mundo do trabalho. ",
+      "Além de um ensino médio de ótima qualidade, o curso me ajudou a escolher o que cursar na faculdade, conheci um novo mercado de trabalho, muito interessante e com diversas oportunidades, algo que eu nunca veria se não fosse pelo IFRS Campus Caxias do Sul, ao menos não com tanta imersão no assunto. ",
+      "IFRS me preparou não só para o ambiente acadêmico e de trabalho, mas sim para a vida como um todo. Evoluí muito no IFRS.",
+      "Faltaram atividades práticas no curso e a situação da pandemia demorou a ser resolvida, muitas outras instituições sem a infraestrutura e corpo docente preparado que o IFRS e o Campus Rolante possuem realizaram ações, e a turma que participei ficou muito descontente com o fato. Meu voto seria um meio termo, mas como não ha a opção marquei o anterior. Sou grata ao IFRS por diversos outros pontos, mas quanto ao curso estas observações foram necessárias",
+      "Não marquei como muito satisfatório, pois passamos dois anos em pandemia de forma remota.",
+      "Qualidade dos professores e infraestrutura.",
+      "Os professores são extremamente qualificados e se preocupam em iniciar ao aluno não apenas o conteúdo da disciplina, bem como a experiência de mercado e acadêmica que é tão importante para o pós conclusão.",
+      "Apesar de não ter seguido na área do curso, fui muito feliz com a oportunidade de estudar no IFRS. Isso com certeza auxiliou e contribuiu para ser o profissional que sou hoje, além de querer cursar uma graduação de alta qualidade e ter clareza do que buscava seguir na minha vida. ",
+      "O mercado de trabalho é muito diferente de tudo que foi ensinado. A pratica do mercado de trabalho acabou ensinando mais.",
+      "Muitas coisas podiam ser melhores no curso, desde a infraestrutura até saídas de campo, visitações e um contato maior com as indústrias. Em relação a infraestrutura, o material não corresponde aos mais atuais e ao que de fato se encontra no mercado, além da pouca quantidade e preservação.",
+      "Por ser a primeira turma do técnico em Administração, poucas coisas foram aproveitadas de fato, pois tudo era novo até para os professores",
+      "Ensino de alta qualidade e preparação profissional",
+      "Professores extremamente qualificados e infraestrutura que permite aliar o conhecimento teórico ao prático.",
+      "Faço graduação e noto o quanto esse curso me abre oportunidades na área acadêmica, além da técnica. ",
+      "Ótimo ensino de educação ",
+      "ótimos professores, estrutura de altíssima qualidade e o preparo para o mercado de trabalho/mundo real foi muito bem executado por todos na instituição!",
+      "É um ótimo curso, com boa infraestrutura e bons professores. Porém poderiam ter mais diversidade nos conteúdos das disciplinas ofertadas e uma maior rigidez com os professores, pois haviam casos em que esses não cumpriam com o conteúdo pragmático e com as atividades avaliativas obrigatórias. ",
+      "Foco excessivo em uma linguagem, tendo pouca variedade.",
+      "Me preparou para o mercado e me formou como ser humano. Aprendi coisas como liderança, apresentação e técnica na área da TI",
+      "Ótimo ensino curricular. Na época, técnico deixou a desejar.",
+      "Gostei muito do curso, me trouxe conhecimentos e experiências úteis tanto na área como fora dela.",
+      "Não me agrega atualmente na graduação que escolhi.",
+      "Além de todo o conhecimento obtido, sempre opinei que o curso técnico facilita que o jovem consiga ter noção de qual carreira ele quer seguir, pois o técnico integrado irá promover uma visão daquilo que o aluno fará no futuro caso siga a carreira. \nOutro ponto é que realizei meu estágio obrigatório na empresa que atuo até hoje. Na época fui efetivado como torneiro mecânico ferramenteiro, e hoje trabalho na engenharia de produto e processo.",
+      "Bons professores e conteúdo adequado",
+      "Tiver a oportunidade de um ensino gratuito e de qualidade, tanto referenciando matérias da grade curricular de ensino médio quanto de ensino técnico. Excelentes professores e humanos acima de tudo.",
+      "Pandemia atrapalhou demais as aulas praticas",
+      "Exemplos: Professores abusivos com os alunos, terror psicológico e não ligam nem um pouquinho pra trajetória do aluno ali dentro. Precisei de acompanhamento psicológico pra se quer conseguir terminar meu curso e mesmo assim saí tão traumatizada de lá que a paixão que eu tinha por automação foi sugada de mim e fez com que eu fosse para um caminho completamente diferente e não quisesse exercer minha profissão ou ter uma formação continuada na área. Não recomendo a ninguém os métodos completamente arcaicos de ensino do campi que me formei.",
+      "Foi um ótimo curso, mas a pandemia impactou bastante na qualidade. E alguns professores deixaram muito a desejar.",
+      "É bom, para um curso de nível médio. Mas não é muito atualizado no que o mercado de trabalho quer e precisa.",
+      "É interessante ter uma capacitação nesse sentindo, mais ainda quando se continua na área. Serve como um pequeno voo na disciplina. ",
+      "É um curso muito amplo e rico que possibilita o contato com diversas áreas da tecnologia.",
+      "O ambiente do Ifrs me proporcionou um aprendizado incrível e conhecer técnicas que me dão destaque no ambiente em que estou inserido hoje.",
+      "O curso é de ótima qualidade, porém acredito que alguns conceitos poderiam ser ensinados e não estavam presentes na grade (ex: Inteligência artificial, programação distribuída, edge computing). Entendo que o tempo é pouco e que esses conceitos tem certo grau de complexidade, mas acredito que são essenciais ao menos a introdução desses conceitos para que o posterior egresso saiba onde procurar mais informações e tenha um caminho delimitado.",
+      "O curso te oferece base, desenvolvimento e preparo para o futuro profissional e acadêmico de forma única e aprofundada.",
+      "Ensino de qualidade",
+      "Ensino de qualidade",
+      "Muito bom",
+      "Ótimos professores, espaço acolhedor e que fomenta a curiosidade e expressão artística.",
+      "Atendeu às expectativas.",
+      "Pude ter contato com a Química e a Química Industrial de forma acadêmica e profissional a um nível satisfatório para um aluno de ensino médio, que me ajudou muito para os vestibulares e amadurecimento pessoal.",
+      "Pois a grade curricular é muito semelhante e contempla quase tudo de um curso bacharelado na área.",
+      "Tive um grande aprendizado, principalmente com relação às disciplinas de audiovisual, as quais me possibilitaram explorar outras áreas de atuação profissional, além de explorar estas áreas enquanto estava no Ensino Médio Técnico Integrado devido a oportunidades que surgiram por conta do curso e de suas intensa recomendação e visibilidade crescente no município. ",
+      "Ótimo curso, grade de professores muito boa, experiências no ensino médio de IC são únicas. ",
+      "Vi que me preparou para atuar no curso que estou me graduando (Eng. Bioquimica)"
+    ]
+  },
+  {
+    "pergunta": "Você continuou os estudos após o TÉRMINO do curso marcado anteriormente?",
+    "respostas": [
+      "Sim",
+      "Sim",
+      "Sim",
+      "Sim",
+      "Sim",
+      "Sim",
+      "Sim",
+      "Não",
+      "Sim",
+      "Sim",
+      "Não",
+      "Sim",
+      "Sim",
+      "Sim",
+      "Sim",
+      "Não",
+      "Sim",
+      "Sim",
+      "Não",
+      "Não",
+      "Não",
+      "Sim",
+      "Não",
+      "Sim",
+      "Não",
+      "Sim",
+      "Sim",
+      "Sim",
+      "Sim",
+      "Sim",
+      "Sim",
+      "Sim",
+      "Não",
+      "Não",
+      "Sim",
+      "Não",
+      "Sim",
+      "Sim",
+      "Sim",
+      "Não",
+      "Sim",
+      "Sim",
+      "Sim",
+      "Sim",
+      "Sim",
+      "Sim",
+      "Não",
+      "Não",
+      "Sim",
+      "Não",
+      "Sim",
+      "Não",
+      "Sim",
+      "Não",
+      "Não",
+      "Sim",
+      "Sim",
+      "Sim",
+      "Sim",
+      "Sim",
+      "Sim",
+      "Sim",
+      "Não",
+      "Não",
+      "Sim",
+      "Sim",
+      "Sim",
+      "Sim",
+      "Não",
+      "Não",
+      "Sim",
+      "Não",
+      "Sim",
+      "Não",
+      "Sim",
+      "Não",
+      "Sim",
+      "Sim",
+      "Sim",
+      "Sim",
+      "Não",
+      "Não",
+      "Sim",
+      "Sim",
+      "Sim",
+      "Sim",
+      "Sim",
+      "Sim",
+      "Sim",
+      "Não",
+      "Não",
+      "Sim",
+      "Sim",
+      "Não",
+      "Não",
+      "Sim",
+      "Não",
+      "Sim",
+      "Não",
+      "Não",
+      "Sim",
+      "Não",
+      "Não",
+      "Não",
+      "Não",
+      "Sim",
+      "Sim",
+      "Não",
+      "Não",
+      "Sim",
+      "Sim",
+      "Sim",
+      "Não",
+      "Sim",
+      "Não",
+      "Não",
+      "Sim",
+      "Sim",
+      "Sim",
+      "Sim",
+      "Sim",
+      "Sim",
+      "Sim",
+      "Sim",
+      "Sim",
+      "Não",
+      "Sim",
+      "Sim",
+      "Sim",
+      "Sim",
+      "Não",
+      "Não",
+      "Não",
+      "Não",
+      "Sim",
+      "Não",
+      "Sim",
+      "Sim",
+      "Sim",
+      "Sim",
+      "Sim",
+      "Não",
+      "Não",
+      "Não",
+      "Não",
+      "Não",
+      "Sim",
+      "Sim",
+      "Não",
+      "Não",
+      "Sim",
+      "Não",
+      "Sim"
+    ]
+  },
+  {
+    "pergunta": "Até que ponto seu trabalho está relacionado com a ÁREA do curso marcado anteriormente?",
+    "respostas": [
+      "Muito relacionado",
+      "Não relacionado",
+      "Relacionado",
+      "Muito relacionado",
+      "Muito relacionado",
+      "Muito relacionado",
+      "Muito relacionado",
+      "Não relacionado",
+      "Não relacionado",
+      "Muito relacionado",
+      "Não relacionado",
+      "Não sei dizer",
+      "Não relacionado",
+      "Muito relacionado",
+      "Muito relacionado",
+      "Não relacionado",
+      "Muito relacionado",
+      "Relacionado",
+      "Relacionado",
+      "Muito relacionado",
+      "Muito relacionado",
+      "Muito relacionado",
+      "Muito relacionado",
+      "Relacionado",
+      "Muito relacionado",
+      "Muito relacionado",
+      "Não relacionado",
+      "Pouco relacionado",
+      "Pouco relacionado",
+      "Relacionado",
+      "Muito relacionado",
+      "Relacionado",
+      "Muito relacionado",
+      "Muito relacionado",
+      "Muito relacionado",
+      "Muito relacionado",
+      "Muito relacionado",
+      "Relacionado",
+      "Muito relacionado",
+      "Muito relacionado",
+      "Muito relacionado",
+      "Não relacionado",
+      "Não relacionado",
+      "Muito relacionado",
+      "Muito relacionado",
+      "Muito relacionado",
+      "Muito relacionado",
+      "Relacionado",
+      "Não relacionado",
+      "Muito relacionado",
+      "Muito relacionado",
+      "Pouco relacionado",
+      "Muito relacionado",
+      "Relacionado",
+      "Pouco relacionado",
+      "Relacionado",
+      "Não relacionado",
+      "Relacionado",
+      "Pouco relacionado",
+      "Muito relacionado",
+      "Relacionado",
+      "Relacionado",
+      "Muito relacionado",
+      "Relacionado",
+      "Não relacionado",
+      "Muito relacionado",
+      "Relacionado",
+      "Muito relacionado",
+      "Muito relacionado",
+      "Relacionado",
+      "Relacionado",
+      "Relacionado",
+      "Não relacionado",
+      "Não relacionado",
+      "Muito relacionado",
+      "Muito relacionado",
+      "Pouco relacionado",
+      "Muito relacionado",
+      "Relacionado",
+      "Muito relacionado",
+      "Relacionado",
+      "Muito relacionado",
+      "Muito relacionado",
+      "Muito relacionado",
+      "Muito relacionado",
+      "Relacionado",
+      "Pouco relacionado",
+      "Muito relacionado",
+      "Pouco relacionado",
+      "Relacionado",
+      "Não relacionado",
+      "Relacionado",
+      "Muito relacionado",
+      "Relacionado",
+      "Pouco relacionado",
+      "Muito relacionado",
+      "Muito relacionado",
+      "Muito relacionado",
+      "Não relacionado",
+      "Não relacionado",
+      "Muito relacionado",
+      "Muito relacionado",
+      "Muito relacionado",
+      "Muito relacionado",
+      "Relacionado",
+      "Pouco relacionado",
+      "Não relacionado",
+      "Pouco relacionado",
+      "Muito relacionado",
+      "Não relacionado",
+      "Relacionado",
+      "Relacionado",
+      "Não relacionado",
+      "Muito relacionado",
+      "Pouco relacionado",
+      "Pouco relacionado",
+      "Relacionado",
+      "Muito relacionado",
+      "Não relacionado",
+      "Relacionado",
+      "Muito relacionado",
+      "Pouco relacionado",
+      "Pouco relacionado",
+      "Não relacionado",
+      "Muito relacionado",
+      "Relacionado",
+      "Muito relacionado",
+      "Muito relacionado",
+      "Pouco relacionado",
+      "Não relacionado",
+      "Pouco relacionado",
+      "Relacionado",
+      "Muito relacionado",
+      "Muito relacionado",
+      "Muito relacionado",
+      "Relacionado",
+      "Não relacionado",
+      "Não relacionado",
+      "Relacionado",
+      "Muito relacionado",
+      "Relacionado",
+      "Não relacionado",
+      "Muito relacionado",
+      "Relacionado",
+      "Muito relacionado",
+      "Muito relacionado",
+      "Muito relacionado",
+      "Muito relacionado",
+      "Pouco relacionado",
+      "Muito relacionado",
+      "Muito relacionado",
+      "Muito relacionado",
+      "Muito relacionado",
+      "Pouco relacionado",
+      "Muito relacionado",
+      "Muito relacionado",
+      "Não relacionado",
+      "Muito relacionado",
+      "Pouco relacionado",
+      "Relacionado",
+      "Muito relacionado",
+      "Muito relacionado",
+      "Pouco relacionado",
+      "Pouco relacionado",
+      "Muito relacionado",
+      "Muito relacionado",
+      "Relacionado",
+      "Muito relacionado",
+      "Pouco relacionado",
+      "Muito relacionado",
+      "Muito relacionado",
+      "Relacionado",
+      "Relacionado",
+      "Relacionado",
+      "Muito relacionado",
+      "Relacionado",
+      "Relacionado",
+      "Relacionado",
+      "Muito relacionado",
+      "Pouco relacionado",
+      "Muito relacionado",
+      "Pouco relacionado",
+      "Muito relacionado",
+      "Não relacionado",
+      "Muito relacionado",
+      "Não relacionado",
+      "Muito relacionado",
+      "Pouco relacionado",
+      "Muito relacionado",
+      "Muito relacionado",
+      "Muito relacionado",
+      "Muito relacionado",
+      "Muito relacionado",
+      "Muito relacionado",
+      "Muito relacionado",
+      "Muito relacionado",
+      "Pouco relacionado",
+      "Pouco relacionado",
+      "Relacionado",
+      "Não relacionado",
+      "Muito relacionado",
+      "Muito relacionado",
+      "Muito relacionado",
+      "Relacionado",
+      "Muito relacionado",
+      "Muito relacionado",
+      "Muito relacionado",
+      "Muito relacionado",
+      "Muito relacionado",
+      "Muito relacionado",
+      "Muito relacionado",
+      "Muito relacionado",
+      "Muito relacionado",
+      "Não relacionado",
+      "Não relacionado",
+      "Muito relacionado",
+      "Não relacionado",
+      "Relacionado",
+      "Relacionado",
+      "Pouco relacionado",
+      "Muito relacionado",
+      "Muito relacionado",
+      "Relacionado",
+      "Pouco relacionado",
+      "Muito relacionado",
+      "Não relacionado",
+      "Pouco relacionado",
+      "Muito relacionado",
+      "Não relacionado",
+      "Não relacionado",
+      "Muito relacionado",
+      "Muito relacionado",
+      "Relacionado",
+      "Pouco relacionado",
+      "Muito relacionado",
+      "Muito relacionado",
+      "Relacionado",
+      "Relacionado",
+      "Muito relacionado",
+      "Muito relacionado",
+      "Pouco relacionado",
+      "Pouco relacionado",
+      "Muito relacionado",
+      "Pouco relacionado",
+      "Muito relacionado",
+      "Muito relacionado",
+      "Muito relacionado",
+      "Muito relacionado",
+      "Muito relacionado",
+      "Muito relacionado",
+      "Muito relacionado",
+      "Muito relacionado",
+      "Muito relacionado",
+      "Não relacionado",
+      "Relacionado",
+      "Muito relacionado",
+      "Muito relacionado",
+      "Muito relacionado",
+      "Pouco relacionado",
+      "Relacionado",
+      "Relacionado",
+      "Muito relacionado",
+      "Pouco relacionado",
+      "Não relacionado",
+      "Muito relacionado",
+      "Muito relacionado",
+      "Muito relacionado",
+      "Relacionado",
+      "Relacionado",
+      "Muito relacionado",
+      "Não relacionado",
+      "Muito relacionado",
+      "Muito relacionado",
+      "Relacionado",
+      "Relacionado",
+      "Muito relacionado",
+      "Não sei dizer",
+      "Muito relacionado",
+      "Muito relacionado",
+      "Muito relacionado",
+      "Relacionado",
+      "Pouco relacionado",
+      "Pouco relacionado",
+      "Muito relacionado",
+      "Muito relacionado",
+      "Relacionado",
+      "Não relacionado",
+      "Pouco relacionado",
+      "Pouco relacionado",
+      "Muito relacionado",
+      "Não relacionado",
+      "Relacionado",
+      "Muito relacionado",
+      "Não relacionado",
+      "Não relacionado",
+      "Relacionado",
+      "Não relacionado",
+      "Relacionado",
+      "Não relacionado"
+    ]
+  }
+];
+     
+
+    // Função para transformar JSON em linhas (respondentes)
+    function transformData(raw) {
+      const questions = raw.map(item => item.pergunta);
+      const firstQuestionAnswers = raw[0].respostas;
+      const totalRespondents = firstQuestionAnswers.length;
+      const data = [];
+      for (let i = 0; i < totalRespondents; i++) {
+        const respondent = {};
+        raw.forEach(q => {
+          respondent[q.pergunta] = q.respostas[i] || null;
+        });
+        data.push(respondent);
+      }
+      return data;
+    }
+
+    const allData = transformData(rawData);
+    let filteredData = [...allData];
+
+    const COLUMN = {
+      MODALIDADE: "Qual a modalidade do ÚLTIMO curso finalizado no IFRS?",
+      CURSO: "Qual o ÚLTIMO curso finalizado no IFRS?",
+      OPINIAO: "Qual a sua opinião sobre o curso marcado anteriormente?",
+      CONTINUOU_ESTUDOS: "Você continuou os estudos após o TÉRMINO do curso marcado anteriormente?",
+      TRABALHO_AREA: "Até que ponto seu trabalho está relacionado com a ÁREA do curso marcado anteriormente?",
+      JUSTIFICATIVA: "Qual a justificativa para a opinião marcada anteriormente?"
+    };
+
+    function getUniqueValues(data, columnKey) {
+      const values = data.map(row => row[columnKey]).filter(v => v);
+      return [...new Set(values)].sort();
+    }
+
+    function populateFilters() {
+      const modalidadeSelect = document.getElementById('modalidadeFilter');
+      const cursoSelect = document.getElementById('cursoFilter');
+
+      getUniqueValues(allData, COLUMN.MODALIDADE).forEach(mod => {
+        const opt = document.createElement('option');
+        opt.value = opt.textContent = mod;
+        modalidadeSelect.appendChild(opt);
+      });
+
+      getUniqueValues(allData, COLUMN.CURSO).forEach(curso => {
+        const opt = document.createElement('option');
+        opt.value = opt.textContent = curso;
+        cursoSelect.appendChild(opt);
+      });
+    }
+
+    function applyFilters() {
+      const modalidadeValue = document.getElementById('modalidadeFilter').value;
+      const cursoValue = document.getElementById('cursoFilter').value;
+
+      filteredData = allData.filter(row => {
+        const matchModalidade = !modalidadeValue || row[COLUMN.MODALIDADE] === modalidadeValue;
+        const matchCurso = !cursoValue || row[COLUMN.CURSO] === cursoValue;
+        return matchModalidade && matchCurso;
+      });
+
+      updateSummary();
+      updateCharts();
+      updateJustificativas();
+    }
+
+    function resetFilters() {
+      document.getElementById('modalidadeFilter').value = '';
+      document.getElementById('cursoFilter').value = '';
+      filteredData = [...allData];
+      updateSummary();
+      updateCharts();
+      updateJustificativas();
+    }
+
+    function updateSummary() {
+      document.getElementById('totalRespondentes').textContent = filteredData.length;
+
+      const satisfatorios = filteredData.filter(r =>
+        r[COLUMN.OPINIAO] === "Muito satisfatório" || r[COLUMN.OPINIAO] === "Satisfatório"
+      ).length;
+      document.getElementById('opiniaoSatisfatoria').textContent = satisfatorios;
+
+      const continuaram = filteredData.filter(r => r[COLUMN.CONTINUOU_ESTUDOS] === "Sim").length;
+      document.getElementById('continuaramEstudos').textContent = continuaram;
+
+      const naArea = filteredData.filter(r =>
+        r[COLUMN.TRABALHO_AREA] === "Muito relacionado" || r[COLUMN.TRABALHO_AREA] === "Relacionado"
+      ).length;
+      document.getElementById('trabalhandoNaArea').textContent = naArea;
+    }
+
+    let charts = {};
+    function countValues(data, columnKey) {
+      return data.reduce((acc, row) => {
+        const val = row[columnKey];
+        if (val) acc[val] = (acc[val] || 0) + 1;
+        return acc;
+      }, {});
+    }
+
+    function renderChart(canvasId, title, type, labels, data) {
+      const ctx = document.getElementById(canvasId).getContext('2d');
+      if (charts[canvasId]) charts[canvasId].destroy();
+      charts[canvasId] = new Chart(ctx, {
+        type,
+        data: {
+          labels,
+          datasets: [{
+            label: title,
+            data,
+            backgroundColor: [
+              'rgba(54,162,235,0.7)',
+              'rgba(255,99,132,0.7)',
+              'rgba(255,205,86,0.7)',
+              'rgba(75,192,192,0.7)',
+              'rgba(153,102,255,0.7)',
+              'rgba(201,203,207,0.7)'
+            ]
+          }]
+        },
+        options: { responsive: true, plugins: { title: { display: true, text: title } } }
+      });
+    }
+
+    function updateCharts() {
+      renderChart('opiniaoChart', 'Opiniões', 'pie',
+        Object.keys(countValues(filteredData, COLUMN.OPINIAO)),
+        Object.values(countValues(filteredData, COLUMN.OPINIAO)));
+
+      renderChart('estudosChart', 'Continuaram Estudos', 'doughnut',
+        Object.keys(countValues(filteredData, COLUMN.CONTINUOU_ESTUDOS)),
+        Object.values(countValues(filteredData, COLUMN.CONTINUOU_ESTUDOS)));
+
+      renderChart('modalidadeChart', 'Modalidades', 'bar',
+        Object.keys(countValues(filteredData, COLUMN.MODALIDADE)),
+        Object.values(countValues(filteredData, COLUMN.MODALIDADE)));
+
+      renderChart('trabalhoAreaChart', 'Relação Trabalho/Área', 'bar',
+        Object.keys(countValues(filteredData, COLUMN.TRABALHO_AREA)),
+        Object.values(countValues(filteredData, COLUMN.TRABALHO_AREA)));
+    }
+
+    function updateJustificativas() {
+      const container = document.getElementById('justificativasContainer');
+      container.innerHTML = '';
+      const justificativas = filteredData.map(r => r[COLUMN.JUSTIFICATIVA]).filter(j => j);
+      if (!justificativas.length) {
+        container.innerHTML = '<div class="alert alert-warning">Nenhuma justificativa encontrada.</div>';
+        return;
+      }
+      const list = document.createElement('div');
+      list.className = 'list-group';
+      justificativas.slice(0,5).forEach((j,i) => {
+        const item = document.createElement('div');
+        item.className = 'list-group-item';
+        item.innerHTML = `<strong>${i+1}.</strong> ${j}`;
+        list.appendChild(item);
+      });
+      container.appendChild(list);
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      populateFilters();
+      applyFilters();
+      document.getElementById('applyFilters').addEventListener('click', applyFilters);
+      document.getElementById('resetFilters').addEventListener('click', resetFilters);
+    });
+  </script>
+</body>
+</html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard Alumni IFRS 2023/2024</title>
+  <!-- Bootstrap CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    body { padding: 20px; }
+    .filter-section { background-color: #f8f9fa; padding: 20px; border-radius: 8px; margin-bottom: 20px; }
+    .chart-container { margin-bottom: 40px; }
+    .summary-card { margin-bottom: 20px; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1 class="text-center mb-4">Dashboard Alumni IFRS 2023/2024</h1>
+
+    <!-- Filtros -->
+    <div class="filter-section">
+      <h3>Filtros</h3>
+      <div class="row">
+        <div class="col-md-4">
+          <label for="modalidadeFilter" class="form-label">Modalidade:</label>
+          <select id="modalidadeFilter" class="form-select">
+            <option value="">Todas</option>
+          </select>
+        </div>
+        <div class="col-md-4">
+          <label for="cursoFilter" class="form-label">Curso:</label>
+          <select id="cursoFilter" class="form-select">
+            <option value="">Todos</option>
+          </select>
+        </div>
+        <div class="col-md-4 d-flex align-items-end">
+          <button id="applyFilters" class="btn btn-primary">Aplicar Filtros</button>
+          <button id="resetFilters" class="btn btn-secondary ms-2">Limpar</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Resumo -->
+    <div class="summary-section">
+      <h3>Resumo dos Dados</h3>
+      <div class="row">
+        <div class="col-md-3">
+          <div class="card summary-card">
+            <div class="card-body">
+              <h5 class="card-title">Total de Respondentes</h5>
+              <p class="card-text" id="totalRespondentes">0</p>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-3">
+          <div class="card summary-card">
+            <div class="card-body">
+              <h5 class="card-title">Opinião Satisfatória</h5>
+              <p class="card-text" id="opiniaoSatisfatoria">0</p>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-3">
+          <div class="card summary-card">
+            <div class="card-body">
+              <h5 class="card-title">Continuaram Estudos</h5>
+              <p class="card-text" id="continuaramEstudos">0</p>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-3">
+          <div class="card summary-card">
+            <div class="card-body">
+              <h5 class="card-title">Trabalhando na Área</h5>
+              <p class="card-text" id="trabalhandoNaArea">0</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Gráficos -->
+    <div class="chart-section">
+      <div class="row">
+        <div class="col-md-6">
+          <div class="chart-container"><canvas id="opiniaoChart"></canvas></div>
+        </div>
+        <div class="col-md-6">
+          <div class="chart-container"><canvas id="estudosChart"></canvas></div>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-md-6">
+          <div class="chart-container"><canvas id="modalidadeChart"></canvas></div>
+        </div>
+        <div class="col-md-6">
+          <div class="chart-container"><canvas id="trabalhoAreaChart"></canvas></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Justificativas -->
+    <div class="justificativas-section mt-5">
+      <h3>Justificativas Selecionadas</h3>
+      <div id="justificativasContainer" class="alert alert-info">
+        Selecione um filtro para ver as justificativas.
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // 🔹 Cole seu JSON aqui
+    const rawData = 
+        [
+  {
+    "pergunta": "Qual a modalidade do ÚLTIMO curso finalizado no IFRS?",
+    "respostas": [
+      "Técnico Integrado ao Ensino Médio",
+      "Graduação",
+      "Técnico Integrado ao Ensino Médio",
+      "Técnico Integrado ao Ensino Médio",
+      "Graduação",
+      "Graduação",
+      "Graduação",
+      "Graduação",
+      "Graduação",
+      "Graduação",
+      "Graduação",
+      "Técnico Integrado ao Ensino Médio",
+      "Técnico Integrado ao Ensino Médio",
+      "Graduação",
+      "Técnico Integrado ao Ensino Médio",
+      "Técnico Integrado ao Ensino Médio",
+      "Técnico Integrado ao Ensino Médio",
+      "Graduação",
+      "Técnico Integrado ao Ensino Médio",
+      "Técnico Integrado ao Ensino Médio",
+      "Graduação",
+      "Técnico Subsequente ao Ensino Médio",
+      "Técnico Integrado ao Ensino Médio",
+      "Técnico Integrado ao Ensino Médio",
+      "Técnico Integrado ao Ensino Médio",
+      "Técnico Integrado ao Ensino Médio",
+      "Técnico Subsequente ao Ensino Médio",
+      "Técnico Subsequente ao Ensino Médio",
+      "Pós Graduação",
+      "Técnico Integrado ao Ensino Médio",
+      "Graduação",
+      "Pós Graduação",
+      "Graduação",
+      "Pós Graduação",
+      "Graduação",
+      "Pós Graduação",
+      "Graduação",
+      "Técnico Integrado ao Ensino Médio",
+      "Graduação",
+      "Graduação",
+      "Técnico Integrado ao Ensino Médio",
+      "Graduação",
+      "Graduação",
+      "Técnico Subsequente ao Ensino Médio",
+      "Graduação",
+      "Técnico Integrado ao Ensino Médio",
+      "Pós Graduação",
+      "Técnico Integrado ao Ensino Médio",
+      "Técnico Integrado ao Ensino Médio",
+      "Graduação",
+      "Técnico Integrado ao Ensino Médio",
+      "Técnico Integrado ao Ensino Médio",
+      "Técnico Integrado ao Ensino Médio",
+      "Técnico Integrado ao Ensino Médio",
+      "Técnico Integrado ao Ensino Médio",
+      "Técnico Integrado ao Ensino Médio",
+      "Graduação",
+      "Técnico Integrado ao Ensino Médio",
+      "Técnico Integrado ao Ensino Médio",
+      "Graduação",
+      "Graduação",
+      "Graduação",
+      "Graduação",
+      "Graduação",
+      "Técnico Integrado ao Ensino Médio",
+      "Técnico Integrado ao Ensino Médio",
+      "Técnico Integrado ao Ensino Médio",
+      "Técnico Integrado ao Ensino Médio",
+      "Graduação",
+      "Técnico Integrado ao Ensino Médio",
+      "Graduação",
+      "Técnico Integrado ao Ensino Médio",
+      "Pós Graduação",
+      "Técnico Integrado ao Ensino Médio",
+      "Graduação",
+      "Técnico Subsequente ao Ensino Médio",
+      "Pós Graduação",
+      "Técnico Integrado ao Ensino Médio",
+      "Técnico Integrado ao Ensino Médio",
+      "Técnico Integrado ao Ensino Médio",
+      "Técnico Integrado ao Ensino Médio",
+      "Técnico Integrado ao Ensino Médio",
+      "Técnico Integrado ao Ensino Médio",
+      "Técnico Integrado ao Ensino Médio",
+      "Graduação",
+      "Graduação",
+      "Técnico Integrado ao Ensino Médio",
+      "Técnico Integrado ao Ensino Médio",
+      "Técnico Integrado ao Ensino Médio",
+      "Técnico Integrado ao Ensino Médio",
+      "Técnico Integrado ao Ensino Médio",
+      "Técnico Subsequente ao Ensino Médio",
+      "Graduação",
+      "Graduação",
+      "Técnico Integrado ao Ensino Médio",
+      "Graduação",
+      "Graduação",
+      "Curso de Formação Inicial e Continuada (FIC)",
+      "Técnico Integrado ao Ensino Médio",
+      "Graduação",
+      "Técnico Subsequente ao Ensino Médio",
+      "Graduação",
+      "Técnico Subsequente ao Ensino Médio",
+      "Técnico Integrado ao Ensino Médio",
+      "Graduação",
+      "Graduação",
+      "Técnico Integrado ao Ensino Médio",
+      "Técnico Integrado ao Ensino Médio",
+      "Técnico Integrado ao Ensino Médio",
+      "Técnico Integrado ao Ensino Médio",
+      "Técnico Integrado ao Ensino Médio",
+      "Graduação",
+      "Graduação",
+      "Graduação",
+      "Graduação",
+      "Graduação",
+      "Graduação",
+      "Técnico Integrado ao Ensino Médio",
+      "Técnico Integrado ao Ensino Médio",
+      "Graduação",
+      "Técnico Integrado ao Ensino Médio",
+      "Graduação",
+      "Técnico Integrado ao Ensino Médio",
+      "Técnico Integrado ao Ensino Médio",
+      "Técnico Integrado ao Ensino Médio",
+      "Graduação",
+      "Técnico Subsequente ao Ensino Médio",
+      "Técnico Concomitante ao Ensino Médio",
+      "Técnico Integrado ao Ensino Médio",
+      "Pós Graduação",
+      "Graduação",
+      "Técnico Integrado ao Ensino Médio",
+      "Graduação",
+      "Técnico Integrado ao Ensino Médio",
+      "Graduação",
+      "Técnico Subsequente ao Ensino Médio",
+      "Técnico Subsequente ao Ensino Médio",
+      "Técnico Integrado ao Ensino Médio",
+      "Técnico Integrado ao Ensino Médio",
+      "Técnico Integrado ao Ensino Médio",
+      "Técnico Integrado ao Ensino Médio",
+      "Técnico Integrado ao Ensino Médio",
+      "Técnico Integrado ao Ensino Médio",
+      "Técnico Integrado ao Ensino Médio",
+      "Técnico Integrado ao Ensino Médio",
+      "Graduação",
+      "Técnico Subsequente ao Ensino Médio",
+      "Graduação",
+      "Graduação",
+      "Graduação",
+      "Técnico Integrado ao Ensino Médio",
+      "Técnico Subsequente ao Ensino Médio",
+      "Técnico Integrado ao Ensino Médio",
+      "Graduação",
+      "Técnico Integrado ao Ensino Médio",
+      "Técnico Integrado ao Ensino Médio",
+      "Técnico Integrado ao Ensino Médio",
+      "Técnico Integrado ao Ensino Médio",
+      "Graduação",
+      "Técnico Integrado ao Ensino Médio",
+      "Técnico Integrado ao Ensino Médio",
+      "Técnico Integrado ao Ensino Médio",
+      "Técnico Integrado ao Ensino Médio",
+      "Técnico Subsequente ao Ensino Médio",
+      "Graduação",
+      "Técnico Integrado ao Ensino Médio",
+      "Técnico Integrado ao Ensino Médio",
+      "Pós Graduação",
+      "Técnico Integrado ao Ensino Médio",
+      "Técnico Integrado ao Ensino Médio",
+      "Graduação",
+      "Técnico Integrado ao Ensino Médio",
+      "Graduação",
+      "Graduação",
+      "Técnico Integrado ao Ensino Médio",
+      "Graduação",
+      "Técnico Subsequente ao Ensino Médio",
+      "Técnico Subsequente ao Ensino Médio",
+      "Graduação",
+      "Técnico Integrado ao Ensino Médio",
+      "Técnico Integrado ao Ensino Médio",
+      "Técnico Integrado ao Ensino Médio",
+      "Técnico Integrado ao Ensino Médio",
+      "Técnico Integrado ao Ensino Médio",
+      "Técnico Integrado ao Ensino Médio",
+      "Graduação",
+      "Técnico Integrado ao Ensino Médio",
+      "Técnico Integrado ao Ensino Médio",
+      "Graduação",
+      "Técnico Integrado ao Ensino Médio",
+      "Técnico Integrado ao Ensino Médio",
+      "Graduação",
+      "Técnico Subsequente ao Ensino Médio",
+      "Técnico Integrado ao Ensino Médio",
+      "Técnico Concomitante ao Ensino Médio",
+      "Técnico Integrado ao Ensino Médio",
+      "Técnico Integrado ao Ensino Médio",
+      "Graduação",
+      "Técnico Integrado ao Ensino Médio",
+      "Técnico Subsequente ao Ensino Médio",
+      "Técnico Integrado ao Ensino Médio",
+      "Graduação",
+      "Graduação",
+      "Graduação",
+      "Graduação",
+      "Técnico Integrado ao Ensino Médio",
+      "Técnico Integrado ao Ensino Médio",
+      "Graduação",
+      "Graduação",
+      "Graduação",
+      "Técnico Subsequente ao Ensino Médio",
+      "Graduação",
+      "Graduação",
+      "Graduação",
+      "Técnico Integrado ao Ensino Médio",
+      "Graduação",
+      "Graduação",
+      "Graduação",
+      "Técnico Integrado ao Ensino Médio",
+      "Técnico Integrado ao Ensino Médio",
+      "Graduação",
+      "Graduação",
+      "Graduação",
+      "Pós Graduação",
+      "Graduação",
+      "Graduação",
+      "Graduação",
+      "Técnico Integrado ao Ensino Médio",
+      "Técnico Integrado ao Ensino Médio",
+      "Graduação",
+      "Graduação",
+      "Técnico Integrado ao Ensino Médio",
+      "Graduação",
+      "Graduação",
+      "Técnico Integrado ao Ensino Médio",
+      "Técnico Integrado ao Ensino Médio",
+      "Técnico Integrado ao Ensino Médio",
+      "Técnico Integrado ao Ensino Médio",
+      "Graduação",
+      "Graduação",
+      "Técnico Integrado ao Ensino Médio",
+      "Técnico Integrado ao Ensino Médio",
+      "Graduação",
+      "Técnico Subsequente ao Ensino Médio",
+      "Técnico Subsequente ao Ensino Médio",
+      "Técnico Integrado ao Ensino Médio",
+      "Técnico Integrado ao Ensino Médio",
+      "Graduação",
+      "Graduação",
+      "Graduação",
+      "Graduação",
+      "Graduação",
+      "Graduação",
+      "Graduação",
+      "Graduação",
+      "Graduação",
+      "Educação à Distância (EaD)",
+      "Técnico Integrado ao Ensino Médio",
+      "Graduação",
+      "Técnico Integrado ao Ensino Médio",
+      "Técnico Integrado ao Ensino Médio",
+      "Graduação",
+      "Graduação",
+      "Graduação",
+      "Técnico Subsequente ao Ensino Médio",
+      "Graduação",
+      "Graduação",
+      "Técnico Subsequente ao Ensino Médio",
+      "Técnico Subsequente ao Ensino Médio",
+      "Técnico Subsequente ao Ensino Médio",
+      "Técnico Subsequente ao Ensino Médio",
+      "Graduação",
+      "Pós Graduação",
+      "Técnico Integrado ao Ensino Médio",
+      "Técnico Integrado ao Ensino Médio",
+      "Técnico Integrado ao Ensino Médio",
+      "Técnico Subsequente ao Ensino Médio",
+      "Técnico Integrado ao Ensino Médio",
+      "Técnico Integrado ao Ensino Médio",
+      "Técnico Subsequente ao Ensino Médio",
+      "Graduação",
+      "Pós-graduação",
+      "Técnico Subsequente ao Ensino Médio",
+      "Técnico Integrado ao Ensino Médio",
+      "Graduação",
+      "Técnico Integrado ao Ensino Médio",
+      "Técnico Integrado ao Ensino Médio",
+      "Técnico Integrado ao Ensino Médio",
+      "Graduação",
+      "Graduação",
+      "Técnico Integrado ao Ensino Médio",
+      "Técnico Integrado ao Ensino Médio",
+      "Técnico Integrado ao Ensino Médio",
+      "Técnico Subsequente ao Ensino Médio",
+      "Técnico Integrado ao Ensino Médio",
+      "Técnico Subsequente ao Ensino Médio",
+      "Graduação",
+      "Técnico Subsequente ao Ensino Médio",
+      "Técnico Integrado ao Ensino Médio",
+      "Graduação",
+      "Técnico Subsequente ao Ensino Médio",
+      "Graduação",
+      "Graduação",
+      "Técnico Integrado ao Ensino Médio",
+      "Técnico Integrado ao Ensino Médio",
+      "Graduação",
+      "Graduação",
+      "Graduação",
+      "Técnico Integrado ao Ensino Médio",
+      "Técnico Integrado ao Ensino Médio",
+      "Pós-graduação",
+      "Pós-graduação",
+      "Técnico Integrado ao Ensino Médio",
+      "Técnico Integrado ao Ensino Médio",
+      "Técnico Integrado ao Ensino Médio",
+      "Graduação",
+      "Técnico Integrado ao Ensino Médio",
+      "Técnico Subsequente ao Ensino Médio",
+      "Técnico Subsequente ao Ensino Médio",
+      "Pós-graduação",
+      "Técnico Integrado ao Ensino Médio",
+      "Graduação",
+      "Graduação",
+      "Graduação",
+      "Técnico Integrado ao Ensino Médio",
+      "Técnico Integrado ao Ensino Médio",
+      "Graduação",
+      "Graduação",
+      "Técnico Integrado ao Ensino Médio",
+      "Técnico Integrado ao Ensino Médio",
+      "Graduação",
+      "Pós-graduação",
+      "Técnico Subsequente ao Ensino Médio",
+      "Graduação",
+      "Pós-graduação",
+      "Técnico Integrado ao Ensino Médio",
+      "Técnico Integrado ao Ensino Médio",
+      "Técnico Subsequente ao Ensino Médio",
+      "Técnico Subsequente ao Ensino Médio",
+      "Técnico Subsequente ao Ensino Médio",
+      "Graduação",
+      "Graduação",
+      "Graduação",
+      "Técnico Integrado ao Ensino Médio",
+      "Graduação",
+      "Graduação",
+      "Técnico Integrado ao Ensino Médio",
+      "Graduação",
+      "Graduação",
+      "Técnico Integrado ao Ensino Médio",
+      "Graduação",
+      "Graduação",
+      "Pós-graduação",
+      "Graduação",
+      "Técnico Integrado ao Ensino Médio",
+      "Graduação",
+      "Graduação",
+      "Graduação",
+      "Técnico Integrado ao Ensino Médio",
+      "Graduação",
+      "Graduação",
+      "Técnico Integrado ao Ensino Médio",
+      "Técnico Integrado ao Ensino Médio",
+      "Técnico Subsequente ao Ensino Médio",
+      "Graduação",
+      "Técnico Integrado ao Ensino Médio",
+      "Graduação",
+      "Técnico Integrado ao Ensino Médio",
+      "Graduação",
+      "Técnico Subsequente ao Ensino Médio",
+      "Graduação",
+      "Pós-graduação",
+      "Graduação",
+      "Graduação",
+      "Graduação",
+      "Graduação",
+      "Técnico Integrado ao Ensino Médio",
+      "Técnico Integrado ao Ensino Médio",
+      "Graduação"
+    ]
+  },
+  {
+    "pergunta": "Qual o ÚLTIMO curso finalizado no IFRS?",
+    "respostas": [
+      "Técnico em Meio Ambiente",
+      "Técnico em Informática",
+      "Técnico em Química",
+      "Técnico em Administração",
+      "Técnico em Informática",
+      "Técnico em Agropecuária",
+      "Técnico em Química",
+      "Técnico em Plásticos",
+      "Técnico em Informática",
+      "Técnico em Química",
+      "Não está na lista",
+      "Técnico em Informática",
+      "Técnico em Eletrônica",
+      "Técnico em Automação Industrial",
+      "Técnico em Informática para Internet",
+      "Técnico em Agropecuária",
+      "Técnico em Eletrônica",
+      "Técnico em Eletrotécnica",
+      "Técnico em Agropecuária",
+      "Técnico em Meio Ambiente",
+      "Técnico em Eletrotécnica",
+      "Técnico em Informática",
+      "Técnico em Eletrônica",
+      "Técnico em Informática para Internet",
+      "Técnico em Agropecuária",
+      "Técnico em Fabricação Mecânica",
+      "Técnico em Meio Ambiente",
+      "Técnico em Refrigeração e Climatização",
+      "Técnico em Informática",
+      "Técnico em Informática",
+      "Técnico em Agropecuária",
+      "Técnico em Multimídia",
+      "Técnico em Informática",
+      "Técnico em Geoprocessamento",
+      "Técnico em Agropecuária",
+      "Técnico em Eletrotécnica",
+      "Técnico em Eletrotécnica",
+      "Técnico em Informática",
+      "Técnico em Geoprocessamento",
+      "Técnico em Multimídia",
+      "Técnico em Química",
+      "Técnico em Eletrônica",
+      "Técnico em Administração",
+      "Técnico em Administração",
+      "Técnico em Eletrônica",
+      "Técnico em Química",
+      "Técnico em Agropecuária",
+      "Técnico em Informática",
+      "Técnico em Automação Industrial",
+      "Técnico em Administração",
+      "Técnico em Informática para Internet",
+      "Técnico em Informática",
+      "Técnico em Administração",
+      "Técnico em Informática",
+      "Técnico em Agropecuária",
+      "Técnico em Informática",
+      "Técnico em Administração",
+      "Técnico em Agropecuária",
+      "Técnico em Administração",
+      "Técnico em Informática para Internet",
+      "Técnico em Plásticos",
+      "Técnico em Agropecuária",
+      "Técnico em Informática",
+      "Técnico em Agropecuária",
+      "Técnico em Automação Industrial",
+      "Técnico em Administração",
+      "Técnico em Plásticos",
+      "Técnico em Administração",
+      "Técnico em Administração",
+      "Técnico em Administração",
+      "Técnico em Agropecuária",
+      "Técnico em Agropecuária",
+      "Técnico em Química",
+      "Técnico em Administração",
+      "Técnico em Informática para Internet",
+      "Técnico em Administração",
+      "Técnico em Eletrotécnica",
+      "Técnico em Agropecuária",
+      "Técnico em Meio Ambiente",
+      "Técnico em Agropecuária",
+      "Técnico em Administração",
+      "Técnico em Agropecuária",
+      "Técnico em Multimídia",
+      "Técnico em Multimídia",
+      "Técnico em Multimídia",
+      "Técnico em Informática para Internet",
+      "Técnico em Química",
+      "Técnico em Informática para Internet",
+      "Técnico em Viticultura e Enologia",
+      "Técnico em Informática",
+      "Técnico em Química",
+      "Técnico em Automação Industrial",
+      "Técnico em Administração",
+      "Técnico em Agropecuária",
+      "Técnico em Eletrônica",
+      "Técnico em Agropecuária",
+      "Técnico em Agropecuária",
+      "Técnico em Eletrônica",
+      "Técnico em Agropecuária",
+      "Técnico em Fabricação Mecânica",
+      "Técnico em Química",
+      "Técnico em Geoprocessamento",
+      "Técnico em Administração",
+      "Técnico em Informática para Internet",
+      "Técnico em Agropecuária",
+      "Técnico em Informática",
+      "Técnico em Informática",
+      "Técnico em Eletrônica",
+      "Técnico em Fabricação Mecânica",
+      "Técnico em Eletrotécnica",
+      "Técnico em Multimídia",
+      "Técnico em Administração",
+      "Técnico em Informática",
+      "Técnico em Eletrônica",
+      "Técnico em Administração",
+      "Técnico em Informática",
+      "Técnico em Administração",
+      "Técnico em Informática",
+      "Técnico em Administração",
+      "Técnico em Mecânica",
+      "Técnico em Química",
+      "Técnico em Fabricação Mecânica",
+      "Técnico em Eletrotécnica",
+      "Técnico em Química",
+      "Técnico em Refrigeração e Climatização",
+      "Técnico em Eletrotécnica",
+      "Técnico em Eletrotécnica",
+      "Técnico em Química",
+      "Técnico em Automação Industrial",
+      "Técnico em Administração",
+      "Técnico em Administração",
+      "Técnico em Informática",
+      "Técnico em Informática",
+      "Técnico em Informática",
+      "Técnico em Administração",
+      "Técnico em Plásticos",
+      "Técnico em Administração",
+      "Técnico em Plásticos",
+      "Técnico em Multimídia",
+      "Técnico em Administração",
+      "Técnico em Agropecuária",
+      "Técnico em Química",
+      "Técnico em Produção de Áudio e Vídeo",
+      "Técnico em Desenvolvimento de Sistemas",
+      "Técnico em Administração",
+      "Técnico em Eletrônica",
+      "Técnico em Química",
+      "Técnico em Eletrotécnica",
+      "Técnico em Informática para Internet",
+      "Técnico em Agropecuária",
+      "Não está na lista",
+      "Técnico em Produção de Áudio e Vídeo",
+      "Técnico em Geoprocessamento",
+      "Técnico em Informática para Internet",
+      "Técnico em Química",
+      "Técnico em Multimídia",
+      "Técnico em Administração",
+      "Técnico em Multimídia",
+      "Técnico em Química",
+      "Técnico em Fabricação Mecânica",
+      "Técnico em Química",
+      "Técnico em Informática"
+    ]
+  },
+  {
+    "pergunta": "Qual a sua opinião sobre o curso marcado anteriormente?",
+    "respostas": [
+      "Satisfatório",
+      "Muito satisfatório",
+      "Muito satisfatório",
+      "Muito satisfatório",
+      "Muito satisfatório",
+      "Muito satisfatório",
+      "Satisfatório",
+      "Satisfatório",
+      "Satisfatório",
+      "Satisfatório",
+      "Satisfatório",
+      "Muito satisfatório",
+      "Satisfatório",
+      "Satisfatório",
+      "Muito satisfatório",
+      "Satisfatório",
+      "Insatisfatório",
+      "Satisfatório",
+      "Satisfatório",
+      "Satisfatório",
+      "Satisfatório",
+      "Muito satisfatório",
+      "Satisfatório",
+      "Satisfatório",
+      "Muito satisfatório",
+      "Satisfatório",
+      "Satisfatório",
+      "Satisfatório",
+      "Muito satisfatório",
+      "Muito satisfatório",
+      "Muito satisfatório",
+      "Muito satisfatório",
+      "Muito satisfatório",
+      "Satisfatório",
+      "Muito satisfatório",
+      "Muito satisfatório",
+      "Muito satisfatório",
+      "Satisfatório",
+      "Muito satisfatório",
+      "Muito satisfatório",
+      "Muito satisfatório",
+      "Satisfatório",
+      "Satisfatório",
+      "Satisfatório",
+      "Satisfatório",
+      "Muito satisfatório",
+      "Muito satisfatório",
+      "Muito satisfatório",
+      "Muito satisfatório",
+      "Muito satisfatório",
+      "Muito satisfatório",
+      "Muito satisfatório",
+      "Muito satisfatório",
+      "Satisfatório",
+      "Muito satisfatório",
+      "Satisfatório",
+      "Satisfatório",
+      "Satisfatório",
+      "Muito satisfatório",
+      "Satisfatório",
+      "Satisfatório",
+      "Muito satisfatório",
+      "Muito satisfatório",
+      "Satisfatório",
+      "Muito satisfatório",
+      "Muito satisfatório",
+      "Satisfatório",
+      "Satisfatório",
+      "Muito satisfatório",
+      "Satisfatório",
+      "Satisfatório",
+      "Muito satisfatório",
+      "Muito satisfatório",
+      "Muito satisfatório",
+      "Muito satisfatório",
+      "Satisfatório",
+      "Muito satisfatório",
+      "Satisfatório",
+      "Satisfatório",
+      "Pouco satisfatório",
+      "Satisfatório",
+      "Satisfatório",
+      "Muito satisfatório",
+      "Muito satisfatório",
+      "Muito satisfatório",
+      "Muito satisfatório",
+      "Satisfatório",
+      "Satisfatório",
+      "Muito satisfatório",
+      "Muito satisfatório",
+      "Satisfatório",
+      "Satisfatório",
+      "Satisfatório",
+      "Muito satisfatório",
+      "Muito satisfatório",
+      "Muito satisfatório",
+      "Muito satisfatório",
+      "Satisfatório",
+      "Satisfatório",
+      "Satisfatório",
+      "Muito satisfatório",
+      "Muito satisfatório",
+      "Muito satisfatório",
+      "Satisfatório",
+      "Satisfatório",
+      "Satisfatório",
+      "Muito satisfatório",
+      "Satisfatório",
+      "Muito satisfatório",
+      "Satisfatório",
+      "Satisfatório",
+      "Muito satisfatório",
+      "Muito satisfatório",
+      "Pouco satisfatório",
+      "Muito satisfatório",
+      "Satisfatório",
+      "Muito satisfatório",
+      "Satisfatório",
+      "Satisfatório",
+      "Satisfatório",
+      "Satisfatório",
+      "Muito satisfatório",
+      "Muito satisfatório",
+      "Satisfatório",
+      "Muito satisfatório",
+      "Satisfatório",
+      "Satisfatório",
+      "Muito satisfatório",
+      "Insatisfatório",
+      "Satisfatório",
+      "Muito satisfatório",
+      "Satisfatório",
+      "Satisfatório",
+      "Satisfatório",
+      "Pouco satisfatório",
+      "Satisfatório",
+      "Satisfatório",
+      "Muito satisfatório",
+      "Muito satisfatório",
+      "Satisfatório",
+      "Satisfatório",
+      "Satisfatório",
+      "Muito satisfatório",
+      "Satisfatório",
+      "Muito satisfatório",
+      "Muito satisfatório",
+      "Muito satisfatório",
+      "Muito satisfatório",
+      "Muito satisfatório",
+      "Muito satisfatório",
+      "Muito satisfatório",
+      "Muito satisfatório",
+      "Muito satisfatório",
+      "Satisfatório",
+      "Muito satisfatório",
+      "Muito satisfatório",
+      "Satisfatório",
+      "Muito satisfatório",
+      "Satisfatório",
+      "Muito satisfatório",
+      "Muito satisfatório",
+      "Muito satisfatório"
+    ]
+  },
+  {
+    "pergunta": "Qual a justificativa para a opinião marcada anteriormente?",
+    "respostas": [
+      "O IFRS realizou sonhos que eu nem imaginava ter. Me deu perspectivas maiores, objetivos grandiosos. Me tornou uma profissional com todas as habilidades técnicas, mas principalmente me ensinou a sempre manter os pés no chão, presando pelo lado \"humano\"",
+      "A qualidade do ensino, a estrutura disponibilizada e a complementação de aprendizados oferecida pelo IFRS",
+      "Abriu as portas para o meu futuro",
+      "É notório que os professores se acomodam nas suas rotinas. Logo, o ensino médio técnico foi bom, mas tanto o currículo de médio quanto o currículo do técnico estão defazados, com professores sem motivação, entre outras coisas",
+      "Infraestrutura merecida de um ensino público de qualidade. Porém com professores técnicos que não tem motivação nenhuma em aprender a ensinar. Precisava de um rivotril antes das aulas pra não enlouquecer se você tinha interesse em aprender.",
+      "O curso me agregou muito para continuar na área.",
+      "Foi bom",
+      "O curso tem uma base teórica extensa e boa, porém, poderia ter sido mais focado na prática em situações cotidianas, para além do laboratório de eletrônica.",
+      "Ter realizado o curso técnico me propos uma facilidade grande na faculdade, tanto pelos conhecimentos normais do ensino médio, quanto pelas matérias técnicas em si. Porém, ter realizado parte dele na pandemia prejudicou minha formação. ",
+      "Este curso me apresentou ao desenvolvimento de aplicações e construiu uma base solida para minha carreira como desenvolvedor.",
+      "Acredito que o mercado de manutenção que era o grande foco inicial dos técnicos está saturado.",
+      "Prepração dos estudantes para a vida.",
+      "Aprendi o necessário para ser uma boa profissional.",
+      "Satisfatório porém acredito que o curso precise se atualizar mais para o mercado de trabalho, principalmente na parte prática, buscar um equilíbrio entre parte teórica e projeto e prática, além de se atualizar em questão de softwares e dispositivos.",
+      "Estou trabalhando no mercado desde o primeiro ano que sai do curso. Já passei até por posições de líder técnico, sem nem mesmo ter uma graduação. Tive boa base e proveito do curso. Tive a sorte de pegar 4 anos sem greve/paralizações/home office, isso ajudou.",
+      "A base que tive no IFRS foi excelente para minha trajetoria profissional e na UFRGS tambem.",
+      "Os 4 anos de ensino médio integrado com o curso técnico contribuiu muito para meu crescimento pessoal e profissional! ",
+      "professores excelentes \nkgráficos ",
+      "As disciplinas do ensino médio foram muito proveitosas e me garantiram uma ótima nota no ENEM. Entretanto, como fui formanda durante a pandemia, senti falta das aulas práticas técnicas para ter uma formação técnica de qualidade.",
+      "Falta de técnicos em meio ambiente que realmente trabalharam na área, como professores.",
+      "Foi muito bom, mas acabei não exercendo pela baixa perspectiva do mercado de trabalho.",
+      "Vivência universitária e imersa em pesquisa e desenvolvimento.",
+      "Escelente estrutura, ótimos professores somada à experiência da moradia estudantil",
+      "Muito bom o curso",
+      "O curso é bom, porém faz-se necessário focar também na área de manutenção e infra, não apenas em desenvolvimento de software.",
+      "Curso me deu base para a ciência",
+      "Integração perfeita de aulas teóricas e práticas e excelentes oportunidades durante o curso.",
+      "Os professores eram excelentes. Tive muitas oportunidades lá",
+      "Curso ótimo! Prepara muito bem para o mercado de trabalho!",
+      "Qualidade do curso na preparação do aluno para o mercado de trabalho ",
+      "Me fez melhorar como estudante, profissional e como pessoa. ",
+      "A experiência do curso foi muito construtiva para minha vida acadêmica.",
+      "Ótimos profissionais trabalhando no campus e professores extremamente capacitados. Além disso, uma ampla variedade de eventos e projetos que envolviam a participação dos alunos.",
+      "Professores muito capacitados e infraestrutura excelente",
+      "Curso muito bom, quem quer seguir na área desenvolve uma base muito importante para o aprofundamento do ensino superior.",
+      "Acredito que para um melhor curso, há necessidade de maior foco na lógica para programação, e menor foco na linguagem de programação em si. Afinal, a  linguagem é apenas uma ferramenta. Ademais, acredito que vários assuntos poderiam ter sido melhor expostos e um diferente planejamento do currículo também seria extremamente válido, dessa forma, estaria melhor abordando as questões atuais da área de informática. ",
+      "Muitos professores muito bons, mas alguns ruins",
+      "Acho que o curso deu uma base boa para o mercado de trabalho, porém foi muito prejudicado pela pandemia",
+      "As condições estruturais: alimentação, moradia, biblioteca, espaço para práticas, estágios contribuiram para isso",
+      "O curso está muito bem inserido no mercado de trabalho atual, além dos professores estarem muito dedicados à apresentar as novas tecnologias e tendências, comprometidos em proporcionar habilidades e conhecimentos técnicos exigidos na função de automação e também nas adjascentes, voltadas à computação.",
+      "Experiência positiva de preparação para a visa e oportunidades geradas no mundo do trabalho. ",
+      "Além de um ensino médio de ótima qualidade, o curso me ajudou a escolher o que cursar na faculdade, conheci um novo mercado de trabalho, muito interessante e com diversas oportunidades, algo que eu nunca veria se não fosse pelo IFRS Campus Caxias do Sul, ao menos não com tanta imersão no assunto. ",
+      "IFRS me preparou não só para o ambiente acadêmico e de trabalho, mas sim para a vida como um todo. Evoluí muito no IFRS.",
+      "Faltaram atividades práticas no curso e a situação da pandemia demorou a ser resolvida, muitas outras instituições sem a infraestrutura e corpo docente preparado que o IFRS e o Campus Rolante possuem realizaram ações, e a turma que participei ficou muito descontente com o fato. Meu voto seria um meio termo, mas como não ha a opção marquei o anterior. Sou grata ao IFRS por diversos outros pontos, mas quanto ao curso estas observações foram necessárias",
+      "Não marquei como muito satisfatório, pois passamos dois anos em pandemia de forma remota.",
+      "Qualidade dos professores e infraestrutura.",
+      "Os professores são extremamente qualificados e se preocupam em iniciar ao aluno não apenas o conteúdo da disciplina, bem como a experiência de mercado e acadêmica que é tão importante para o pós conclusão.",
+      "Apesar de não ter seguido na área do curso, fui muito feliz com a oportunidade de estudar no IFRS. Isso com certeza auxiliou e contribuiu para ser o profissional que sou hoje, além de querer cursar uma graduação de alta qualidade e ter clareza do que buscava seguir na minha vida. ",
+      "O mercado de trabalho é muito diferente de tudo que foi ensinado. A pratica do mercado de trabalho acabou ensinando mais.",
+      "Muitas coisas podiam ser melhores no curso, desde a infraestrutura até saídas de campo, visitações e um contato maior com as indústrias. Em relação a infraestrutura, o material não corresponde aos mais atuais e ao que de fato se encontra no mercado, além da pouca quantidade e preservação.",
+      "Por ser a primeira turma do técnico em Administração, poucas coisas foram aproveitadas de fato, pois tudo era novo até para os professores",
+      "Ensino de alta qualidade e preparação profissional",
+      "Professores extremamente qualificados e infraestrutura que permite aliar o conhecimento teórico ao prático.",
+      "Faço graduação e noto o quanto esse curso me abre oportunidades na área acadêmica, além da técnica. ",
+      "Ótimo ensino de educação ",
+      "ótimos professores, estrutura de altíssima qualidade e o preparo para o mercado de trabalho/mundo real foi muito bem executado por todos na instituição!",
+      "É um ótimo curso, com boa infraestrutura e bons professores. Porém poderiam ter mais diversidade nos conteúdos das disciplinas ofertadas e uma maior rigidez com os professores, pois haviam casos em que esses não cumpriam com o conteúdo pragmático e com as atividades avaliativas obrigatórias. ",
+      "Foco excessivo em uma linguagem, tendo pouca variedade.",
+      "Me preparou para o mercado e me formou como ser humano. Aprendi coisas como liderança, apresentação e técnica na área da TI",
+      "Ótimo ensino curricular. Na época, técnico deixou a desejar.",
+      "Gostei muito do curso, me trouxe conhecimentos e experiências úteis tanto na área como fora dela.",
+      "Não me agrega atualmente na graduação que escolhi.",
+      "Além de todo o conhecimento obtido, sempre opinei que o curso técnico facilita que o jovem consiga ter noção de qual carreira ele quer seguir, pois o técnico integrado irá promover uma visão daquilo que o aluno fará no futuro caso siga a carreira. \nOutro ponto é que realizei meu estágio obrigatório na empresa que atuo até hoje. Na época fui efetivado como torneiro mecânico ferramenteiro, e hoje trabalho na engenharia de produto e processo.",
+      "Bons professores e conteúdo adequado",
+      "Tiver a oportunidade de um ensino gratuito e de qualidade, tanto referenciando matérias da grade curricular de ensino médio quanto de ensino técnico. Excelentes professores e humanos acima de tudo.",
+      "Pandemia atrapalhou demais as aulas praticas",
+      "Exemplos: Professores abusivos com os alunos, terror psicológico e não ligam nem um pouquinho pra trajetória do aluno ali dentro. Precisei de acompanhamento psicológico pra se quer conseguir terminar meu curso e mesmo assim saí tão traumatizada de lá que a paixão que eu tinha por automação foi sugada de mim e fez com que eu fosse para um caminho completamente diferente e não quisesse exercer minha profissão ou ter uma formação continuada na área. Não recomendo a ninguém os métodos completamente arcaicos de ensino do campi que me formei.",
+      "Foi um ótimo curso, mas a pandemia impactou bastante na qualidade. E alguns professores deixaram muito a desejar.",
+      "É bom, para um curso de nível médio. Mas não é muito atualizado no que o mercado de trabalho quer e precisa.",
+      "É interessante ter uma capacitação nesse sentindo, mais ainda quando se continua na área. Serve como um pequeno voo na disciplina. ",
+      "É um curso muito amplo e rico que possibilita o contato com diversas áreas da tecnologia.",
+      "O ambiente do Ifrs me proporcionou um aprendizado incrível e conhecer técnicas que me dão destaque no ambiente em que estou inserido hoje.",
+      "O curso é de ótima qualidade, porém acredito que alguns conceitos poderiam ser ensinados e não estavam presentes na grade (ex: Inteligência artificial, programação distribuída, edge computing). Entendo que o tempo é pouco e que esses conceitos tem certo grau de complexidade, mas acredito que são essenciais ao menos a introdução desses conceitos para que o posterior egresso saiba onde procurar mais informações e tenha um caminho delimitado.",
+      "O curso te oferece base, desenvolvimento e preparo para o futuro profissional e acadêmico de forma única e aprofundada.",
+      "Ensino de qualidade",
+      "Ensino de qualidade",
+      "Muito bom",
+      "Ótimos professores, espaço acolhedor e que fomenta a curiosidade e expressão artística.",
+      "Atendeu às expectativas.",
+      "Pude ter contato com a Química e a Química Industrial de forma acadêmica e profissional a um nível satisfatório para um aluno de ensino médio, que me ajudou muito para os vestibulares e amadurecimento pessoal.",
+      "Pois a grade curricular é muito semelhante e contempla quase tudo de um curso bacharelado na área.",
+      "Tive um grande aprendizado, principalmente com relação às disciplinas de audiovisual, as quais me possibilitaram explorar outras áreas de atuação profissional, além de explorar estas áreas enquanto estava no Ensino Médio Técnico Integrado devido a oportunidades que surgiram por conta do curso e de suas intensa recomendação e visibilidade crescente no município. ",
+      "Ótimo curso, grade de professores muito boa, experiências no ensino médio de IC são únicas. ",
+      "Vi que me preparou para atuar no curso que estou me graduando (Eng. Bioquimica)"
+    ]
+  },
+  {
+    "pergunta": "Você continuou os estudos após o TÉRMINO do curso marcado anteriormente?",
+    "respostas": [
+      "Sim",
+      "Sim",
+      "Sim",
+      "Sim",
+      "Sim",
+      "Sim",
+      "Sim",
+      "Não",
+      "Sim",
+      "Sim",
+      "Não",
+      "Sim",
+      "Sim",
+      "Sim",
+      "Sim",
+      "Não",
+      "Sim",
+      "Sim",
+      "Não",
+      "Não",
+      "Não",
+      "Sim",
+      "Não",
+      "Sim",
+      "Não",
+      "Sim",
+      "Sim",
+      "Sim",
+      "Sim",
+      "Sim",
+      "Sim",
+      "Sim",
+      "Não",
+      "Não",
+      "Sim",
+      "Não",
+      "Sim",
+      "Sim",
+      "Sim",
+      "Não",
+      "Sim",
+      "Sim",
+      "Sim",
+      "Sim",
+      "Sim",
+      "Sim",
+      "Não",
+      "Não",
+      "Sim",
+      "Não",
+      "Sim",
+      "Não",
+      "Sim",
+      "Não",
+      "Não",
+      "Sim",
+      "Sim",
+      "Sim",
+      "Sim",
+      "Sim",
+      "Sim",
+      "Sim",
+      "Não",
+      "Não",
+      "Sim",
+      "Sim",
+      "Sim",
+      "Sim",
+      "Não",
+      "Não",
+      "Sim",
+      "Não",
+      "Sim",
+      "Não",
+      "Sim",
+      "Não",
+      "Sim",
+      "Sim",
+      "Sim",
+      "Sim",
+      "Não",
+      "Não",
+      "Sim",
+      "Sim",
+      "Sim",
+      "Sim",
+      "Sim",
+      "Sim",
+      "Sim",
+      "Não",
+      "Não",
+      "Sim",
+      "Sim",
+      "Não",
+      "Não",
+      "Sim",
+      "Não",
+      "Sim",
+      "Não",
+      "Não",
+      "Sim",
+      "Não",
+      "Não",
+      "Não",
+      "Não",
+      "Sim",
+      "Sim",
+      "Não",
+      "Não",
+      "Sim",
+      "Sim",
+      "Sim",
+      "Não",
+      "Sim",
+      "Não",
+      "Não",
+      "Sim",
+      "Sim",
+      "Sim",
+      "Sim",
+      "Sim",
+      "Sim",
+      "Sim",
+      "Sim",
+      "Sim",
+      "Não",
+      "Sim",
+      "Sim",
+      "Sim",
+      "Sim",
+      "Não",
+      "Não",
+      "Não",
+      "Não",
+      "Sim",
+      "Não",
+      "Sim",
+      "Sim",
+      "Sim",
+      "Sim",
+      "Sim",
+      "Não",
+      "Não",
+      "Não",
+      "Não",
+      "Não",
+      "Sim",
+      "Sim",
+      "Não",
+      "Não",
+      "Sim",
+      "Não",
+      "Sim"
+    ]
+  },
+  {
+    "pergunta": "Até que ponto seu trabalho está relacionado com a ÁREA do curso marcado anteriormente?",
+    "respostas": [
+      "Muito relacionado",
+      "Não relacionado",
+      "Relacionado",
+      "Muito relacionado",
+      "Muito relacionado",
+      "Muito relacionado",
+      "Muito relacionado",
+      "Não relacionado",
+      "Não relacionado",
+      "Muito relacionado",
+      "Não relacionado",
+      "Não sei dizer",
+      "Não relacionado",
+      "Muito relacionado",
+      "Muito relacionado",
+      "Não relacionado",
+      "Muito relacionado",
+      "Relacionado",
+      "Relacionado",
+      "Muito relacionado",
+      "Muito relacionado",
+      "Muito relacionado",
+      "Muito relacionado",
+      "Relacionado",
+      "Muito relacionado",
+      "Muito relacionado",
+      "Não relacionado",
+      "Pouco relacionado",
+      "Pouco relacionado",
+      "Relacionado",
+      "Muito relacionado",
+      "Relacionado",
+      "Muito relacionado",
+      "Muito relacionado",
+      "Muito relacionado",
+      "Muito relacionado",
+      "Muito relacionado",
+      "Relacionado",
+      "Muito relacionado",
+      "Muito relacionado",
+      "Muito relacionado",
+      "Não relacionado",
+      "Não relacionado",
+      "Muito relacionado",
+      "Muito relacionado",
+      "Muito relacionado",
+      "Muito relacionado",
+      "Relacionado",
+      "Não relacionado",
+      "Muito relacionado",
+      "Muito relacionado",
+      "Pouco relacionado",
+      "Muito relacionado",
+      "Relacionado",
+      "Pouco relacionado",
+      "Relacionado",
+      "Não relacionado",
+      "Relacionado",
+      "Pouco relacionado",
+      "Muito relacionado",
+      "Relacionado",
+      "Relacionado",
+      "Muito relacionado",
+      "Relacionado",
+      "Não relacionado",
+      "Muito relacionado",
+      "Relacionado",
+      "Muito relacionado",
+      "Muito relacionado",
+      "Relacionado",
+      "Relacionado",
+      "Relacionado",
+      "Não relacionado",
+      "Não relacionado",
+      "Muito relacionado",
+      "Muito relacionado",
+      "Pouco relacionado",
+      "Muito relacionado",
+      "Relacionado",
+      "Muito relacionado",
+      "Relacionado",
+      "Muito relacionado",
+      "Muito relacionado",
+      "Muito relacionado",
+      "Muito relacionado",
+      "Relacionado",
+      "Pouco relacionado",
+      "Muito relacionado",
+      "Pouco relacionado",
+      "Relacionado",
+      "Não relacionado",
+      "Relacionado",
+      "Muito relacionado",
+      "Relacionado",
+      "Pouco relacionado",
+      "Muito relacionado",
+      "Muito relacionado",
+      "Muito relacionado",
+      "Não relacionado",
+      "Não relacionado",
+      "Muito relacionado",
+      "Muito relacionado",
+      "Muito relacionado",
+      "Muito relacionado",
+      "Relacionado",
+      "Pouco relacionado",
+      "Não relacionado",
+      "Pouco relacionado",
+      "Muito relacionado",
+      "Não relacionado",
+      "Relacionado",
+      "Relacionado",
+      "Não relacionado",
+      "Muito relacionado",
+      "Pouco relacionado",
+      "Pouco relacionado",
+      "Relacionado",
+      "Muito relacionado",
+      "Não relacionado",
+      "Relacionado",
+      "Muito relacionado",
+      "Pouco relacionado",
+      "Pouco relacionado",
+      "Não relacionado",
+      "Muito relacionado",
+      "Relacionado",
+      "Muito relacionado",
+      "Muito relacionado",
+      "Pouco relacionado",
+      "Não relacionado",
+      "Pouco relacionado",
+      "Relacionado",
+      "Muito relacionado",
+      "Muito relacionado",
+      "Muito relacionado",
+      "Relacionado",
+      "Não relacionado",
+      "Não relacionado",
+      "Relacionado",
+      "Muito relacionado",
+      "Relacionado",
+      "Não relacionado",
+      "Muito relacionado",
+      "Relacionado",
+      "Muito relacionado",
+      "Muito relacionado",
+      "Muito relacionado",
+      "Muito relacionado",
+      "Pouco relacionado",
+      "Muito relacionado",
+      "Muito relacionado",
+      "Muito relacionado",
+      "Muito relacionado",
+      "Pouco relacionado",
+      "Muito relacionado",
+      "Muito relacionado",
+      "Não relacionado",
+      "Muito relacionado",
+      "Pouco relacionado",
+      "Relacionado",
+      "Muito relacionado",
+      "Muito relacionado",
+      "Pouco relacionado",
+      "Pouco relacionado",
+      "Muito relacionado",
+      "Muito relacionado",
+      "Relacionado",
+      "Muito relacionado",
+      "Pouco relacionado",
+      "Muito relacionado",
+      "Muito relacionado",
+      "Relacionado",
+      "Relacionado",
+      "Relacionado",
+      "Muito relacionado",
+      "Relacionado",
+      "Relacionado",
+      "Relacionado",
+      "Muito relacionado",
+      "Pouco relacionado",
+      "Muito relacionado",
+      "Pouco relacionado",
+      "Muito relacionado",
+      "Não relacionado",
+      "Muito relacionado",
+      "Não relacionado",
+      "Muito relacionado",
+      "Pouco relacionado",
+      "Muito relacionado",
+      "Muito relacionado",
+      "Muito relacionado",
+      "Muito relacionado",
+      "Muito relacionado",
+      "Muito relacionado",
+      "Muito relacionado",
+      "Muito relacionado",
+      "Pouco relacionado",
+      "Pouco relacionado",
+      "Relacionado",
+      "Não relacionado",
+      "Muito relacionado",
+      "Muito relacionado",
+      "Muito relacionado",
+      "Relacionado",
+      "Muito relacionado",
+      "Muito relacionado",
+      "Muito relacionado",
+      "Muito relacionado",
+      "Muito relacionado",
+      "Muito relacionado",
+      "Muito relacionado",
+      "Muito relacionado",
+      "Muito relacionado",
+      "Não relacionado",
+      "Não relacionado",
+      "Muito relacionado",
+      "Não relacionado",
+      "Relacionado",
+      "Relacionado",
+      "Pouco relacionado",
+      "Muito relacionado",
+      "Muito relacionado",
+      "Relacionado",
+      "Pouco relacionado",
+      "Muito relacionado",
+      "Não relacionado",
+      "Pouco relacionado",
+      "Muito relacionado",
+      "Não relacionado",
+      "Não relacionado",
+      "Muito relacionado",
+      "Muito relacionado",
+      "Relacionado",
+      "Pouco relacionado",
+      "Muito relacionado",
+      "Muito relacionado",
+      "Relacionado",
+      "Relacionado",
+      "Muito relacionado",
+      "Muito relacionado",
+      "Pouco relacionado",
+      "Pouco relacionado",
+      "Muito relacionado",
+      "Pouco relacionado",
+      "Muito relacionado",
+      "Muito relacionado",
+      "Muito relacionado",
+      "Muito relacionado",
+      "Muito relacionado",
+      "Muito relacionado",
+      "Muito relacionado",
+      "Muito relacionado",
+      "Muito relacionado",
+      "Não relacionado",
+      "Relacionado",
+      "Muito relacionado",
+      "Muito relacionado",
+      "Muito relacionado",
+      "Pouco relacionado",
+      "Relacionado",
+      "Relacionado",
+      "Muito relacionado",
+      "Pouco relacionado",
+      "Não relacionado",
+      "Muito relacionado",
+      "Muito relacionado",
+      "Muito relacionado",
+      "Relacionado",
+      "Relacionado",
+      "Muito relacionado",
+      "Não relacionado",
+      "Muito relacionado",
+      "Muito relacionado",
+      "Relacionado",
+      "Relacionado",
+      "Muito relacionado",
+      "Não sei dizer",
+      "Muito relacionado",
+      "Muito relacionado",
+      "Muito relacionado",
+      "Relacionado",
+      "Pouco relacionado",
+      "Pouco relacionado",
+      "Muito relacionado",
+      "Muito relacionado",
+      "Relacionado",
+      "Não relacionado",
+      "Pouco relacionado",
+      "Pouco relacionado",
+      "Muito relacionado",
+      "Não relacionado",
+      "Relacionado",
+      "Muito relacionado",
+      "Não relacionado",
+      "Não relacionado",
+      "Relacionado",
+      "Não relacionado",
+      "Relacionado",
+      "Não relacionado"
+    ]
+  }
+];
+     
+
+    // Função para transformar JSON em linhas (respondentes)
+    function transformData(raw) {
+      const questions = raw.map(item => item.pergunta);
+      const firstQuestionAnswers = raw[0].respostas;
+      const totalRespondents = firstQuestionAnswers.length;
+      const data = [];
+      for (let i = 0; i < totalRespondents; i++) {
+        const respondent = {};
+        raw.forEach(q => {
+          respondent[q.pergunta] = q.respostas[i] || null;
+        });
+        data.push(respondent);
+      }
+      return data;
+    }
+
+    const allData = transformData(rawData);
+    let filteredData = [...allData];
+
+    const COLUMN = {
+      MODALIDADE: "Qual a modalidade do ÚLTIMO curso finalizado no IFRS?",
+      CURSO: "Qual o ÚLTIMO curso finalizado no IFRS?",
+      OPINIAO: "Qual a sua opinião sobre o curso marcado anteriormente?",
+      CONTINUOU_ESTUDOS: "Você continuou os estudos após o TÉRMINO do curso marcado anteriormente?",
+      TRABALHO_AREA: "Até que ponto seu trabalho está relacionado com a ÁREA do curso marcado anteriormente?",
+      JUSTIFICATIVA: "Qual a justificativa para a opinião marcada anteriormente?"
+    };
+
+    function getUniqueValues(data, columnKey) {
+      const values = data.map(row => row[columnKey]).filter(v => v);
+      return [...new Set(values)].sort();
+    }
+
+    function populateFilters() {
+      const modalidadeSelect = document.getElementById('modalidadeFilter');
+      const cursoSelect = document.getElementById('cursoFilter');
+
+      getUniqueValues(allData, COLUMN.MODALIDADE).forEach(mod => {
+        const opt = document.createElement('option');
+        opt.value = opt.textContent = mod;
+        modalidadeSelect.appendChild(opt);
+      });
+
+      getUniqueValues(allData, COLUMN.CURSO).forEach(curso => {
+        const opt = document.createElement('option');
+        opt.value = opt.textContent = curso;
+        cursoSelect.appendChild(opt);
+      });
+    }
+
+    function applyFilters() {
+      const modalidadeValue = document.getElementById('modalidadeFilter').value;
+      const cursoValue = document.getElementById('cursoFilter').value;
+
+      filteredData = allData.filter(row => {
+        const matchModalidade = !modalidadeValue || row[COLUMN.MODALIDADE] === modalidadeValue;
+        const matchCurso = !cursoValue || row[COLUMN.CURSO] === cursoValue;
+        return matchModalidade && matchCurso;
+      });
+
+      updateSummary();
+      updateCharts();
+      updateJustificativas();
+    }
+
+    function resetFilters() {
+      document.getElementById('modalidadeFilter').value = '';
+      document.getElementById('cursoFilter').value = '';
+      filteredData = [...allData];
+      updateSummary();
+      updateCharts();
+      updateJustificativas();
+    }
+
+    function updateSummary() {
+      document.getElementById('totalRespondentes').textContent = filteredData.length;
+
+      const satisfatorios = filteredData.filter(r =>
+        r[COLUMN.OPINIAO] === "Muito satisfatório" || r[COLUMN.OPINIAO] === "Satisfatório"
+      ).length;
+      document.getElementById('opiniaoSatisfatoria').textContent = satisfatorios;
+
+      const continuaram = filteredData.filter(r => r[COLUMN.CONTINUOU_ESTUDOS] === "Sim").length;
+      document.getElementById('continuaramEstudos').textContent = continuaram;
+
+      const naArea = filteredData.filter(r =>
+        r[COLUMN.TRABALHO_AREA] === "Muito relacionado" || r[COLUMN.TRABALHO_AREA] === "Relacionado"
+      ).length;
+      document.getElementById('trabalhandoNaArea').textContent = naArea;
+    }
+
+    let charts = {};
+    function countValues(data, columnKey) {
+      return data.reduce((acc, row) => {
+        const val = row[columnKey];
+        if (val) acc[val] = (acc[val] || 0) + 1;
+        return acc;
+      }, {});
+    }
+
+    function renderChart(canvasId, title, type, labels, data) {
+      const ctx = document.getElementById(canvasId).getContext('2d');
+      if (charts[canvasId]) charts[canvasId].destroy();
+      charts[canvasId] = new Chart(ctx, {
+        type,
+        data: {
+          labels,
+          datasets: [{
+            label: title,
+            data,
+            backgroundColor: [
+              'rgba(54,162,235,0.7)',
+              'rgba(255,99,132,0.7)',
+              'rgba(255,205,86,0.7)',
+              'rgba(75,192,192,0.7)',
+              'rgba(153,102,255,0.7)',
+              'rgba(201,203,207,0.7)'
+            ]
+          }]
+        },
+        options: { responsive: true, plugins: { title: { display: true, text: title } } }
+      });
+    }
+
+    function updateCharts() {
+      renderChart('opiniaoChart', 'Opiniões', 'pie',
+        Object.keys(countValues(filteredData, COLUMN.OPINIAO)),
+        Object.values(countValues(filteredData, COLUMN.OPINIAO)));
+
+      renderChart('estudosChart', 'Continuaram Estudos', 'doughnut',
+        Object.keys(countValues(filteredData, COLUMN.CONTINUOU_ESTUDOS)),
+        Object.values(countValues(filteredData, COLUMN.CONTINUOU_ESTUDOS)));
+
+      renderChart('modalidadeChart', 'Modalidades', 'bar',
+        Object.keys(countValues(filteredData, COLUMN.MODALIDADE)),
+        Object.values(countValues(filteredData, COLUMN.MODALIDADE)));
+
+      renderChart('trabalhoAreaChart', 'Relação Trabalho/Área', 'bar',
+        Object.keys(countValues(filteredData, COLUMN.TRABALHO_AREA)),
+        Object.values(countValues(filteredData, COLUMN.TRABALHO_AREA)));
+    }
+
+    function updateJustificativas() {
+      const container = document.getElementById('justificativasContainer');
+      container.innerHTML = '';
+      const justificativas = filteredData.map(r => r[COLUMN.JUSTIFICATIVA]).filter(j => j);
+      if (!justificativas.length) {
+        container.innerHTML = '<div class="alert alert-warning">Nenhuma justificativa encontrada.</div>';
+        return;
+      }
+      const list = document.createElement('div');
+      list.className = 'list-group';
+      justificativas.slice(0,5).forEach((j,i) => {
+        const item = document.createElement('div');
+        item.className = 'list-group-item';
+        item.innerHTML = `<strong>${i+1}.</strong> ${j}`;
+        list.appendChild(item);
+      });
+      container.appendChild(list);
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      populateFilters();
+      applyFilters();
+      document.getElementById('applyFilters').addEventListener('click', applyFilters);
+      document.getElementById('resetFilters').addEventListener('click', resetFilters);
+    });
+  </script>
+</body>
+</html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
